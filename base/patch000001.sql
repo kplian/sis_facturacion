@@ -14,7 +14,7 @@ CREATE TABLE factu.tdosificacion (
   sistema VARCHAR(20) DEFAULT 'Pasajes'::character varying, 
   CONSTRAINT dosificacion_pkey PRIMARY KEY(id_dosificacion)
   
-) WITHOUT OIDS;
+) INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE factu.tfactura (
   id_factura SERIAL NOT NULL, 
@@ -35,7 +35,7 @@ CREATE TABLE factu.tfactura (
   CONSTRAINT factura_codigo_control_key UNIQUE(codigo_control), 
   CONSTRAINT factura_dosificacion_key UNIQUE(id_dosificacion, numero_factura), 
   CONSTRAINT factura_pkey PRIMARY KEY(id_factura)
-) WITHOUT OIDS;
+) INHERITS (pxp.tbase) WITHOUT OIDS;
 
 
   
