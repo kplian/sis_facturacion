@@ -34,7 +34,7 @@ Phx.vista.ActividadEconomica=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'nombre_actividad',
-				fieldLabel: 'nombre_actividad',
+				fieldLabel: 'Actividad',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -64,7 +64,7 @@ Phx.vista.ActividadEconomica=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'codigo_actividad',
-				fieldLabel: 'codigo_actividad',
+				fieldLabel: 'Codigo',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -171,9 +171,9 @@ Phx.vista.ActividadEconomica=Ext.extend(Phx.gridInterfaz,{
 	],
 	tam_pag:50,	
 	title:'Actividad Economica',
-	ActSave:'../../sis_factu/control/ActividadEconomica/insertarActividadEconomica',
-	ActDel:'../../sis_factu/control/ActividadEconomica/eliminarActividadEconomica',
-	ActList:'../../sis_factu/control/ActividadEconomica/listarActividadEconomica',
+	ActSave:'../../sis_facturacion/control/ActividadEconomica/insertarActividadEconomica',
+	ActDel:'../../sis_facturacion/control/ActividadEconomica/eliminarActividadEconomica',
+	ActList:'../../sis_facturacion/control/ActividadEconomica/listarActividadEconomica',
 	id_store:'id_actividad_economica',
 	fields: [
 		{name:'id_actividad_economica', type: 'numeric'},

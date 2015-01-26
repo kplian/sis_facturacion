@@ -34,25 +34,25 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config: {
 				name: 'id_sucursal',
-				fieldLabel: 'id_sucursal',
+				fieldLabel: 'Sucursal',
 				allowBlank: false,
 				emptyText: 'Elija una opción...',
 				store: new Ext.data.JsonStore({
-					url: '../../sis_/control/Clase/Metodo',
-					id: 'id_',
+					url: '../../sis_ventas/control/Sucursal/ListarSucursal',
+					id: 'id_sucursal',
 					root: 'datos',
 					sortInfo: {
-						field: 'nombre',
+						field: 'estacion',
 						direction: 'ASC'
 					},
 					totalProperty: 'total',
-					fields: ['id_', 'nombre', 'codigo'],
+					fields: ['id_sucursal', 'estacion', 'codigo'],
 					remoteSort: true,
-					baseParams: {par_filtro: 'movtip.nombre#movtip.codigo'}
+					baseParams: {par_filtro: 'movtip.estacion#movtip.codigo'}
 				}),
-				valueField: 'id_',
-				displayField: 'nombre',
-				gdisplayField: 'desc_',
+				valueField: 'id_sucursal',
+				displayField: 'estacion',
+				gdisplayField: 'desc_sucursal',
 				hiddenName: 'id_sucursal',
 				forceSelection: true,
 				typeAhead: false,
@@ -61,11 +61,11 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 				mode: 'remote',
 				pageSize: 15,
 				queryDelay: 1000,
-				anchor: '100%',
+				anchor: '60%',
 				gwidth: 150,
 				minChars: 2,
 				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_']);
+					return String.format('{0}', record.data['desc_sucursal']);
 				}
 			},
 			type: 'ComboBox',
@@ -74,6 +74,51 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 			grid: true,
 			form: true
 		},
+		
+		
+		
+		{
+			config:{
+				name: 'id_lugar_pais',
+				fieldLabel: 'Pais',
+				allowBlank: true,
+				emptyText:'Lugar...',
+				store:new Ext.data.JsonStore(
+				{
+					url: '../../sis_parametros/control/Lugar/listarLugar',
+					id: 'id_lugar',
+					root: 'datos',
+					sortInfo:{
+						field: 'nombre',
+						direction: 'ASC'
+					},
+					totalProperty: 'total',
+					fields: ['id_lugar','id_lugar_fk','codigo','nombre','tipo','sw_municipio','sw_impuesto','codigo_largo'],
+					// turn on remote sorting
+					remoteSort: true,
+					baseParams:{tipos:"''pais''",par_filtro:'nombre'}
+				}),
+				valueField: 'id_lugar',
+				displayField: 'nombre',
+				gdisplayField:'desc_pais',
+				hiddenName: 'id_lugar',
+    			triggerAction: 'all',
+    			lazyRender:true,
+				mode:'remote',
+				pageSize:50,
+				queryDelay:500,
+				anchor:"60%",
+				gwidth:220,
+				forceSelection:true,
+				minChars:2,
+				renderer:function (value, p, record){return String.format('{0}', record.data['desc_pais']);}
+			},
+			type:'ComboBox',
+			filters:{pfiltro:'lug.nombre',type:'string'},
+			id_grupo:0,
+			grid:true,
+			form:true
+		},
 		{
 			config: {
 				name: 'id_activida_economica',
@@ -81,7 +126,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: false,
 				emptyText: 'Elija una opción...',
 				store: new Ext.data.JsonStore({
-					url: '../../sis_factu/control/ActividadEconomica/listarActividadEconomica',
+					url: '../../sis_facturacion/control/ActividadEconomica/listarActividadEconomica',
 					id: 'id_actividad_economica',
 					root: 'datos',
 					sortInfo: {
@@ -95,7 +140,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 				}),
 				valueField: 'id_actividad_economica',
 				displayField: 'nombre_actividad',
-				gdisplayField: 'desc_nombre_actividad',
+				gdisplayField: 'desc_actividad',
 				hiddenName: 'id_actividad_economica',
 				forceSelection: true,
 				typeAhead: false,
@@ -108,7 +153,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 				gwidth: 150,
 				minChars: 2,
 				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_nombre_actividad']);
+					return String.format('{0}', record.data['desc_actividad']);
 				}
 			},
 			type: 'ComboBox',
@@ -120,7 +165,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'notificado',
-				fieldLabel: 'notificado',
+				fieldLabel: 'Notificado',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -135,7 +180,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'llave',
-				fieldLabel: 'llave',
+				fieldLabel: 'Llave',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -165,13 +210,13 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'nro_tramite',
-				fieldLabel: 'nro_tramite',
+				fieldLabel: 'Nro Tramite',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
 				maxLength:150
 			},
-				type:'TextField',
+				type:'NumberField',
 				filters:{pfiltro:'dosi.nro_tramite',type:'string'},
 				id_grupo:1,
 				grid:true,
@@ -180,7 +225,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'tipo_autoimpresor',
-				fieldLabel: 'tipo_autoimpresor',
+				fieldLabel: 'Tipo AutoImpresor',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -194,8 +239,23 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		},
 		{
 			config:{
+				name: 'autoimpresor',
+				fieldLabel: 'Autoimpresor',
+				allowBlank: false,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:150
+			},
+				type:'TextField',
+				filters:{pfiltro:'dosi.autoimpresor',type:'string'},
+				id_grupo:1,
+				grid:true,
+				form:true
+		},
+		{
+			config:{
 				name: 'nroaut',
-				fieldLabel: 'nroaut',
+				fieldLabel: 'nro aut',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -210,7 +270,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'final',
-				fieldLabel: 'final',
+				fieldLabel: 'Final',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -225,7 +285,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'estacion',
-				fieldLabel: 'estacion',
+				fieldLabel: 'Estacion',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -240,7 +300,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'inicial',
-				fieldLabel: 'inicial',
+				fieldLabel: 'Inicial',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -255,7 +315,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'tipo',
-				fieldLabel: 'tipo',
+				fieldLabel: 'Tipo',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -270,7 +330,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'glosa_consumidor',
-				fieldLabel: 'glosa_consumidor',
+				fieldLabel: 'Glosa Consumidor',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -285,7 +345,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'glosa_impuestos',
-				fieldLabel: 'glosa_impuestos',
+				fieldLabel: 'Glosa Impuestos',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -300,7 +360,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'fecha_dosificacion',
-				fieldLabel: 'fecha_dosificacion',
+				fieldLabel: 'Fecha Dosificacion',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -313,68 +373,12 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		},
-		{
-			config: {
-				name: 'id_lugar_pais',
-				fieldLabel: 'id_lugar_pais',
-				allowBlank: false,
-				emptyText: 'Elija una opción...',
-				store: new Ext.data.JsonStore({
-					url: '../../sis_/control/Clase/Metodo',
-					id: 'id_',
-					root: 'datos',
-					sortInfo: {
-						field: 'nombre',
-						direction: 'ASC'
-					},
-					totalProperty: 'total',
-					fields: ['id_', 'nombre', 'codigo'],
-					remoteSort: true,
-					baseParams: {par_filtro: 'movtip.nombre#movtip.codigo'}
-				}),
-				valueField: 'id_',
-				displayField: 'nombre',
-				gdisplayField: 'desc_',
-				hiddenName: 'id_lugar_pais',
-				forceSelection: true,
-				typeAhead: false,
-				triggerAction: 'all',
-				lazyRender: true,
-				mode: 'remote',
-				pageSize: 15,
-				queryDelay: 1000,
-				anchor: '100%',
-				gwidth: 150,
-				minChars: 2,
-				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_']);
-				}
-			},
-			type: 'ComboBox',
-			id_grupo: 0,
-			filters: {pfiltro: 'movtip.nombre',type: 'string'},
-			grid: true,
-			form: true
-		},
-		{
-			config:{
-				name: 'autoimpresor',
-				fieldLabel: 'autoimpresor',
-				allowBlank: false,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:150
-			},
-				type:'TextField',
-				filters:{pfiltro:'dosi.autoimpresor',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
+		
+		
 		{
 			config:{
 				name: 'nombre_sisfac',
-				fieldLabel: 'nombre_sisfac',
+				fieldLabel: 'SISFAC',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -389,7 +393,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'fecha_inicio_emi',
-				fieldLabel: 'fecha_inicio_emi',
+				fieldLabel: 'Inicio Emi',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -405,7 +409,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'nro_siguiente',
-				fieldLabel: 'nro_siguiente',
+				fieldLabel: 'Nro Siguiente',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -420,7 +424,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'nro_resolucion',
-				fieldLabel: 'nro_resolucion',
+				fieldLabel: 'Nro Resolucion',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -435,7 +439,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'glosa_empresa',
-				fieldLabel: 'glosa_empresa',
+				fieldLabel: 'Glosa Empresa',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
@@ -465,7 +469,7 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'fecha_reg',
-				fieldLabel: 'Fecha creación',
+				fieldLabel: 'Fecha Creación',
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
@@ -542,9 +546,9 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 	],
 	tam_pag:50,	
 	title:'Dosificacion',
-	ActSave:'../../sis_factu/control/Dosificacion/insertarDosificacion',
-	ActDel:'../../sis_factu/control/Dosificacion/eliminarDosificacion',
-	ActList:'../../sis_factu/control/Dosificacion/listarDosificacion',
+	ActSave:'../../sis_facturacion/control/Dosificacion/insertarDosificacion',
+	ActDel:'../../sis_facturacion/control/Dosificacion/eliminarDosificacion',
+	ActList:'../../sis_facturacion/control/Dosificacion/listarDosificacion',
 	id_store:'id_dosificacion',
 	fields: [
 		{name:'id_dosificacion', type: 'numeric'},
@@ -578,7 +582,9 @@ Phx.vista.Dosificacion=Ext.extend(Phx.gridInterfaz,{
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
-		
+		{name:'desc_sucursal', type: 'string'},
+		{name:'desc_actividad', type: 'string'},
+		{name:'desc_pais', type: 'string'},
 	],
 	sortInfo:{
 		field: 'id_dosificacion',

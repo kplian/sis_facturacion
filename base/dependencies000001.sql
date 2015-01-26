@@ -1,34 +1,42 @@
 /***********************************I-DEP-FFP-FAC-1-19/11/2014****************************************/
 
 
-REATE TABLE fac.tdosificacion (
-  id_dosificacion SERIAL,
-  id_lugar_pais INTEGER NOT NULL,
-  estacion VARCHAR(50) NOT NULL,
-  tipo VARCHAR(50) NOT NULL,
-  id_sucursal INTEGER NOT NULL,
-  tipo_autoimpresor VARCHAR(150) NOT NULL,
-  autoimpresor VARCHAR(150) NOT NULL,
-  nroaut VARCHAR(150) NOT NULL,
-  nro_siguiente VARCHAR(150) NOT NULL,
-  inicial VARCHAR(150) NOT NULL,
-  final VARCHAR(150) NOT NULL,
-  llave VARCHAR(150) NOT NULL,
-  fecha_dosificacion date NOT NULL,
-  nro_tramite VARCHAR(150) NOT NULL,
-  nombre_sisfac VARCHAR(150) NOT NULL,
-  fecha_inicio_emi date NOT NULL,
-  notificado VARCHAR(150) NOT NULL,
-  id_activida_economica integer NOT NULL,
-  glosa_impuestos VARCHAR(150) NOT NULL,
-  glosa_consumidor VARCHAR(150) NOT NULL,
-  glosa_empresa VARCHAR(150) NOT NULL,
-  nro_resolucion VARCHAR(150) NOT NULL,
-  CONSTRAINT pk_tdosificacion__id_dosificacion PRIMARY KEY(id_dosificacion),
-  CONSTRAINT fk_tagencia__id_sucursal FOREIGN KEY (id_sucursal)
-    REFERENCES ven.tsucursal(id_sucursal),
-    CONSTRAINT fk_tdosificacion__id_activida_economica FOREIGN KEY (id_sucursal)
+CREATE TABLE fac.tdosificacion (
+  id_dosificacion SERIAL, 
+  id_lugar_pais INTEGER NOT NULL, 
+  estacion VARCHAR(50) NOT NULL, 
+  tipo VARCHAR(50) NOT NULL, 
+  id_sucursal INTEGER NOT NULL, 
+  tipo_autoimpresor VARCHAR(150) NOT NULL, 
+  autoimpresor VARCHAR(150) NOT NULL, 
+  nroaut VARCHAR(150) NOT NULL, 
+  nro_siguiente VARCHAR(150) NOT NULL, 
+  inicial VARCHAR(150) NOT NULL, 
+  final VARCHAR(150) NOT NULL, 
+  llave VARCHAR(150) NOT NULL, 
+  fecha_dosificacion DATE NOT NULL, 
+  nro_tramite VARCHAR(150) NOT NULL, 
+  nombre_sisfac VARCHAR(150) NOT NULL, 
+  fecha_inicio_emi DATE NOT NULL, 
+  notificado VARCHAR(150) NOT NULL, 
+  id_activida_economica INTEGER NOT NULL, 
+  glosa_impuestos VARCHAR(150) NOT NULL, 
+  glosa_consumidor VARCHAR(150) NOT NULL, 
+  glosa_empresa VARCHAR(150) NOT NULL, 
+  nro_resolucion VARCHAR(150) NOT NULL, 
+  CONSTRAINT pk_tdosificacion__id_dosificacion PRIMARY KEY(id_dosificacion), 
+  CONSTRAINT fk_tdosificacion__id_activida_economica FOREIGN KEY (id_activida_economica)
     REFERENCES fac.tactividad_economica(id_actividad_economica)
+    MATCH PARTIAL
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE, 
+  CONSTRAINT fk_tdosificacion__id_sucursal FOREIGN KEY (id_sucursal)
+    REFERENCES ven.tsucursal(id_sucursal)
+    MATCH PARTIAL
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
 
@@ -140,3 +148,10 @@ WITHOUT OIDS;
 
 
 /***********************************F-DEP-FFP-FAC-1-19/11/2014****************************************/
+
+
+
+/***********************************I-DEP-FFP-FAC-2-25/11/2014****************************************/
+ALTER TABLE fac.tfactura
+  ADD COLUMN id_dosificacion INTEGER;
+/***********************************F-DEP-FFP-FAC-2-25/11/2014****************************************/

@@ -1,7 +1,11 @@
-CREATE OR REPLACE FUNCTION "fac"."ft_dosificacion_sel"(	
-				p_administrador integer, p_id_usuario integer, p_tabla character varying, p_transaccion character varying)
-RETURNS character varying AS
-$BODY$
+CREATE OR REPLACE FUNCTION fac.ft_dosificacion_sel (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Sistema de Factura 
  FUNCION: 		fac.ft_dosificacion_sel
@@ -71,11 +75,17 @@ BEGIN
 						dosi.id_usuario_mod,
 						dosi.fecha_mod,
 						usu1.cuenta as usr_reg,
-						usu2.cuenta as usr_mod	
+						usu2.cuenta as usr_mod,
+                        su.estacion as desc_sucursal,
+                        ae.nombre_actividad as desc_actividad,
+                        lu.nombre as desc_pais
 						from fac.tdosificacion dosi
 						inner join segu.tusuario usu1 on usu1.id_usuario = dosi.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dosi.id_usuario_mod
-				        where  ';
+                        inner join ven.tsucursal su on su.id_sucursal = dosi.id_sucursal
+                        inner join fac.tactividad_economica ae on ae.id_actividad_economica = dosi.id_activida_economica
+				        inner join param.tlugar lu on lu.id_lugar = dosi.id_lugar_pais
+                        where  ';
 			
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -101,7 +111,10 @@ BEGIN
 					    from fac.tdosificacion dosi
 					    inner join segu.tusuario usu1 on usu1.id_usuario = dosi.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dosi.id_usuario_mod
-					    where ';
+                        inner join ven.tsucursal su on su.id_sucursal = dosi.id_sucursal
+                        inner join fac.tactividad_economica ae on ae.id_actividad_economica = dosi.id_activida_economica
+					    inner join param.tlugar lu on lu.id_lugar = dosi.id_lugar_pais
+                        where ';
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -126,7 +139,9 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$BODY$
-LANGUAGE 'plpgsql' VOLATILE
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
 COST 100;
-ALTER FUNCTION "fac"."ft_dosificacion_sel"(integer, integer, character varying, character varying) OWNER TO postgres;

@@ -51,6 +51,10 @@ class MODDosificacion extends MODbase{
 		$this->captura('fecha_mod','timestamp');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
+		$this->captura('desc_sucursal','varchar');
+		$this->captura('desc_actividad','varchar');
+		$this->captura('desc_pais','varchar');
+		
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
