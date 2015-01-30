@@ -51,20 +51,13 @@ CREATE TABLE fac.tdosificacion (
   nro_siguiente INTEGER, 
   CONSTRAINT pk_tdosificacion__id_dosificacion PRIMARY KEY(id_dosificacion), 
   CONSTRAINT fk_tdosificacion__id_activida_economica FOREIGN KEY (id_activida_economica)
-    REFERENCES fac.tactividad_economica(id_actividad_economica)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES fac.tactividad_economica(id_actividad_economica),
+   
   CONSTRAINT fk_tdosificacion__id_sucursal FOREIGN KEY (id_sucursal)
     REFERENCES ven.tsucursal(id_sucursal)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE
+  
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
-
 
 
 CREATE TABLE fac.tfactura (
@@ -89,31 +82,22 @@ CREATE TABLE fac.tfactura (
   id_dosificacion INTEGER, 
   CONSTRAINT pk_tfactura__id_factura PRIMARY KEY(id_factura), 
   CONSTRAINT fk_tfactura__id_actividad_economica FOREIGN KEY (id_actividad_economica)
-    REFERENCES fac.tactividad_economica(id_actividad_economica)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES fac.tactividad_economica(id_actividad_economica),
+   
   CONSTRAINT fk_tfactura__id_agencia FOREIGN KEY (id_agencia)
-    REFERENCES ven.tagencia(id_agencia)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES ven.tagencia(id_agencia),
+   
   CONSTRAINT fk_tfactura__id_moneda FOREIGN KEY (id_moneda)
-    REFERENCES param.tmoneda(id_moneda)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES param.tmoneda(id_moneda),
+   
   CONSTRAINT fk_tfactura__id_sucursal FOREIGN KEY (id_sucursal)
     REFERENCES ven.tsucursal(id_sucursal)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE
+   
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
+
+
+
 
 
 CREATE TABLE fac.tfactura_detalle (
@@ -128,17 +112,9 @@ CREATE TABLE fac.tfactura_detalle (
   concepto VARCHAR(50) NOT NULL, 
   CONSTRAINT pk_tfactura_detalle__id_factura_detalle PRIMARY KEY(id_factura_detalle), 
   CONSTRAINT fk_tfactura_detalle__id_concepto_ingas FOREIGN KEY (id_concepto_ingas)
-    REFERENCES param.tconcepto_ingas(id_concepto_ingas)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES param.tconcepto_ingas(id_concepto_ingas), 
   CONSTRAINT fk_tfactura_detalle__id_factura FOREIGN KEY (id_factura)
     REFERENCES fac.tfactura(id_factura)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
 
@@ -167,25 +143,17 @@ CREATE TABLE fac.tnota (
   id_dosificacion INTEGER, 
   CONSTRAINT pk_tnota__id_nota PRIMARY KEY(id_nota), 
   CONSTRAINT fk_tnota__id_factura FOREIGN KEY (id_factura)
-    REFERENCES fac.tfactura(id_factura)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES fac.tfactura(id_factura),
+  
   CONSTRAINT fk_tnota__id_moneda FOREIGN KEY (id_moneda)
-    REFERENCES param.tmoneda(id_moneda)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES param.tmoneda(id_moneda),
+   
   CONSTRAINT fk_tnota__id_sucursal FOREIGN KEY (id_sucursal)
     REFERENCES ven.tsucursal(id_sucursal)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE
+   
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
+
 
 
 CREATE TABLE fac.tnota_detalle (
@@ -197,17 +165,11 @@ CREATE TABLE fac.tnota_detalle (
   concepto VARCHAR(255), 
   CONSTRAINT pk_tnota_detalle__id_nota_detalle PRIMARY KEY(id_nota_detalle), 
   CONSTRAINT fk_tnota_detalle__id_factura_detalle FOREIGN KEY (id_factura_detalle)
-    REFERENCES fac.tfactura_detalle(id_factura_detalle)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE, 
+    REFERENCES fac.tfactura_detalle(id_factura_detalle),
+   
   CONSTRAINT fk_tnota_detalle__id_nota FOREIGN KEY (id_nota)
     REFERENCES fac.tnota(id_nota)
-    MATCH PARTIAL
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-    NOT DEFERRABLE
+
 ) INHERITS (pxp.tbase)
 WITHOUT OIDS;
 

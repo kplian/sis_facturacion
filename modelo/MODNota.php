@@ -55,7 +55,7 @@ class MODNota extends MODbase{
 		return $this->respuesta;
 	}
 			
-	function insertarNota(){
+	/*function insertarNota(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='fac.ft_nota_ime';
 		$this->transaccion='FAC_NOT_INS';
@@ -86,8 +86,8 @@ class MODNota extends MODbase{
 
 		//Devuelve la respuesta
 		return $this->respuesta;
-	}
-			
+	}*/	
+		
 	function modificarNota(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='fac.ft_nota_ime';
@@ -165,7 +165,7 @@ class MODNota extends MODbase{
 	
 	
 	
-	function saveFormLiquidacion(){
+	function saveFormLiquidacionBoleto(){
 		
 		
 		
@@ -405,128 +405,80 @@ class MODNota extends MODbase{
 	
 	function saveForm(){
 		
-        //crear conexion pdo
-        		
-        $cone=new conexion();		
-		$link=$cone->conectarpdo();
-		//$factura_util = new UTILFacturacion();
-		// decodificar los items
+        $cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
 		
 		$items = json_decode($this->aParam->getParametro('newRecords'));
-		$total = $this->montoTotal($items); // obtiene el total de todos los detalles
-		$exento_total = $this->totalDevuelto($items); // calcula el exento total de todos los detalles devueltos de la factura
-		$total_devuelto = $total - $exento_total; // calcula el total a devolver
-		$credfis = $total_devuelto * 0.13;
-		
-		$id_factura = $this->aParam->getParametro('id_factura');
-		
-		$datos = array();
-		$hora = date("H:i:s");
-		$hoy = date("Y-m-d");
 		
 		
 		
 		
 		
-		//var_dump($items);
-		//exit;
-		
-		//echo $total;
 		try {
-			//obtener sucursal del usuario 
-		  	$link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);		
+			$link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);		
 			
 		  	$link->beginTransaction();
+			$informix->beginTransaction();	
 			
-			
-			//Definicion de variables para ejecucion del procedimiento
-			$this->procedimiento='fac.ft_nota_ime';
-			$this->transaccion='FAC_NOT_INS';
-			$this->tipo_procedimiento='IME';
-			
-			$this->arreglo = array_merge ($this->arreglo,array(
-									"excento"=>$exento_total,
-									 "total_devuelto" =>$total_devuelto,
-									 "credfis"=>$credfis,
-									 "monto_total"=>$total,
-									 "nro_liquidacion"=>'1',
-									 "estacion"=>'estacion',
-									 "estado"=>'estado',
-									 "estado_reg"=>'1',
-									 "id_liquidacion"=>'1',
-									 "nro_nota"=>'100'
-									 ));
-			 
-			//Define los parametros para la funcion
-			$this->setParametro('id_factura','id_factura','int4'); //tengo
-			$this->setParametro('id_sucursal','sucursal_id','int4');//tengo
-			$this->setParametro('id_moneda','id_moneda','int4');//tengo
-			$this->setParametro('estacion','estacion','varchar');
-			$this->setParametro('fecha','fecha','date');//tengo
-			$this->setParametro('excento','excento','numeric');//tengo
-			$this->setParametro('total_devuelto','total_devuelto','numeric');//tengo
-			$this->setParametro('tcambio','tcambio','numeric');//tengo
-			$this->setParametro('id_liquidacion','id_liquidacion','varchar');
-			$this->setParametro('nit','nit','varchar');//tengo
-			$this->setParametro('estado','estado','varchar');
-			$this->setParametro('credfis','credfis','numeric');//tengo
-			$this->setParametro('nro_liquidacion','nro_liquidacion','varchar');
-			$this->setParametro('monto_total','monto_total','numeric');//tengo
-			$this->setParametro('estado_reg','estado_reg','varchar');
-			$this->setParametro('nro_nota','nro_nota','varchar');
-			$this->setParametro('razon','razon','varchar');//tengo
-			
-			
-			
-	
-			//Ejecuta la instruccion
-			$this->armarConsulta();
-			$stmt = $link->prepare($this->consulta);		  
-		  	$stmt->execute();
-			$result = $stmt->fetch(PDO::FETCH_ASSOC);
-			$resp_procedimiento = $this->divRespuesta($result['f_intermediario_ime']);
-			
-			if ($resp_procedimiento['tipo_respuesta']=='ERROR') {
-				throw new Exception("Error al ejecutar en la bd", 3);
-			} else {				
-				$id_nota = $resp_procedimiento['datos']['id_nota'];//aca recuperamos el id_nota
-				$datos['id_nota'] = $id_nota;
+			$i=0;
+			foreach ($items as $item) {
 				
-				//$datos['guia'] = $resp_procedimiento['datos']['guia'];	
-			} 
-				//crear detalle-item directamente por consulta
-				foreach ($items as $item) {
-					$stmt = $link->prepare("INSERT INTO fac.tnota_detalle (
-																			  id_usuario_reg,
-																			  fecha_reg,
-																			  estado_reg,
-																			  id_factura_detalle,
-																			  id_nota,
-																			  importe
-																			)  
-																			VALUES (
-																					 ". $_SESSION['ss_id_usuario'] .",
-																					  now(),
-																					  'activo',
-																					  ". $id_factura .",
-																					  " . $id_nota . ",
-																					  ". $item->importe ."
-																					  
-																			);");
-																			
-																		
-					$stmt->execute();
+				if($item->tipo == 'BOLETO'){
+					
+					
+					$temp[] = $this->guardarNotaBoleto($item);
+				
+					
+				}elseif($item->tipo == 'FACTURA'){
+					
+					if($this->verSiExisteNota($item->nrofac,$item->nroaut) == 0){
+						
+						//se crea una nota para esta fila de datos por que no existe en la base de datos
+						$temp[] = $this->guardarNotaFactura($item);
+						
+					}else{
+						
+						//exote en la base de datos asi solo se guarda como detalle del que existe
+						$nota = $this->verDatosDeNota($item->nrofac,$item->nroaut);
+						$this->insertarNotaDetalle($item, $nota); //mandamos la fila y el id_nota
+						
+						
+					}
+					
 				}
 				
+				
+				$i++;
+				
+				
+				
+			}//fin foreach
+			
+			
 				$link->commit();
+				$informix->commit();
+				
 				$this->respuesta=new Mensaje();
-				$this->respuesta->setMensaje($resp_procedimiento['tipo_respuesta'],$this->nombre_archivo,$resp_procedimiento['mensaje'],$resp_procedimiento['mensaje_tec'],'base',$this->procedimiento,$this->transaccion,$this->tipo_procedimiento,$this->consulta);
-				$this->respuesta->setDatos($datos);
 				
 				
-		
-				} catch (Exception $e) {			
+					
+				$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+				$this->respuesta->setTotal(1);
+				$this->respuesta->setDatos($temp);
+				
+				return $this->respuesta;
+				
+				
+
+		} catch (Exception $e) {
+						
 				    $link->rollBack();
+					$informix->rollBack();
+					
 				    $this->respuesta=new Mensaje();
 					if ($e->getCode() == 3) {//es un error de un procedimiento almacenado de pxp
 						$this->respuesta->setMensaje($resp_procedimiento['tipo_respuesta'],$this->nombre_archivo,$resp_procedimiento['mensaje'],$resp_procedimiento['mensaje_tec'],'base',$this->procedimiento,$this->transaccion,$this->tipo_procedimiento,$this->consulta);
@@ -535,11 +487,251 @@ class MODNota extends MODbase{
 					} else {//es un error lanzado con throw exception
 						throw new Exception($e->getMessage(), 2);
 					}
-				}	
-				
-		return $this->respuesta;	
-        
+		}	//fin catch
+		
     }
+
+	function guardarNotaBoleto($item){
+		
+		$dosificacion = $this->generarDosificacion();
+		
+		$codigo_control = $this->generarCodigoControl($item->nit,$item->total_devuelto,$dosificacion);
+		
+		
+		$id_nota = $this->insertarNota($item,$codigo_control,$dosificacion);	
+		$this->insertarNotaDetalle($item,$id_nota);
+		
+		
+		
+		return $id_nota;
+		
+		
+		
+		
+	}
+	
+	function guardarNotaFactura($item){
+		
+		$dosificacion = $this->generarDosificacion();
+		
+		$codigo_control = $this->generarCodigoControl($item->nit,$item->total_devuelto,$dosificacion);
+		
+		
+		$id_nota = $this->insertarNota($item,$codigo_control,$dosificacion);	
+		
+		return $id_nota;
+		
+		
+		
+		
+	}
+	
+	
+	function generarDosificacion(){
+		
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		$dosi = $link->prepare("select id_dosificacion,
+											       nro_siguiente,
+											       fecha_inicio_emi,
+											       fecha_limite,
+											       nroaut,
+											       llave
+											from fac.tdosificacion
+											order by fecha_inicio_emi DESC
+											limit 1 for update;");
+					
+		$dosi->execute();
+			
+		$dosi_result = $dosi->fetchAll(PDO::FETCH_ASSOC);
+		
+		return $dosi_result;
+		
+	}
+	
+	function generarCodigoControl($nit,$total_devuelto,$dosificacion){
+		
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		
+		
+		
+		
+		$fecha_now = new DateTime("now");
+		
+		$date = new DateTime('now');
+	
+		$id_dosi = $dosificacion[0]['id_dosificacion'];
+		
+		
+		$func_cod_con = $link->prepare("select pxp.f_gen_cod_control(
+										'".$dosificacion[0]['llave']."',
+										'".$dosificacion[0]['nroaut']."','".$dosificacion[0]['nro_siguiente']."','".$nit."','".$date->format('Ymd')."','".$total_devuelto."')");
+		$func_cod_con->execute();
+			
+		$codigo_control = $func_cod_con->fetchAll(PDO::FETCH_ASSOC);
+		
+		return $codigo_control;
+	}
+	
+	
+	function insertarNota($item,$codigo_control,$dosificacion){
+			
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		$credfis = $item->total_devuelto * 0.13;
+			
+		$stmt = $link->prepare("INSERT INTO fac.tnota
+										(
+										
+										  id_usuario_reg,
+										  id_usuario_mod,
+										  fecha_reg,
+										  fecha_mod,
+										  estado_reg,
+										  id_usuario_ai,
+										  usuario_ai,
+										 
+										  estacion,
+										  id_sucursal,
+										  estado,
+										  id_factura,
+										  nro_nota,
+										  fecha,
+										  razon,
+										  tcambio,
+										  nit,
+										  id_liquidacion,
+										  nro_liquidacion,
+										  id_moneda,
+										  monto_total,
+										  excento,
+										  total_devuelto,
+										  credfis,
+										  billete,
+										  codigo_control,
+										  id_dosificacion,
+										  nrofac,
+										  nroaut
+										) 
+			
+										VALUES (
+										
+										  ". $_SESSION['ss_id_usuario'] .",
+										  null,
+										  now(),
+										  null,
+										  'activo',
+										  ". $_SESSION['ss_id_usuario'] .",
+										  null,
+										
+										  'estacion',
+										  '1',
+										  'estado',
+										  1,
+										  '".$dosi_result[0]['nro_siguiente']."',
+										   now(),
+										  '". $item->razon ."',
+										  '6.9',
+										  '". $item->nro_nit ."',
+										  1,
+										  '". $item->nroliqui ."',
+										  1,
+										  ". $item->importe_devolver .",
+										   ". $item->exento .",
+										   '". $item->total_devuelto ."',
+										  ". $credfis .",
+										  '".$item->concepto."',
+										  '".$codigo_control[0]['f_gen_cod_control']."',
+										  '".$dosificacion[0]['id_dosificacion']."',
+										  '".$item->nrofac."',
+										  '".$item->nroaut."'
+										)RETURNING id_nota;");
+										
+	
+
+		$dosi_up = $link->prepare("update fac.tdosificacion set nro_siguiente = (nro_siguiente + 1) where id_dosificacion = '$id_dosi'");
+		
+		
+		$dosi_up->execute();
+							
+		$stmt->execute();
+		
+		$results=$stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		return $results[0]['id_nota'];
+		
+		
+	}
+	
+	
+	function insertarNotaDetalle($item,$id_nota){
+				
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		$stmt2 = $link->prepare("INSERT INTO 
+				  fac.tnota_detalle
+				(
+				  id_usuario_reg,
+				  estado_reg,
+				  id_nota,
+				  importe,
+				  cantidad,
+				  concepto
+				) 
+				VALUES (
+				  ". $_SESSION['ss_id_usuario'] .",
+				  'activo',
+				  '".$id_nota."',
+				  '". $item->total_devuelto ."',
+				  1,
+				   '".$item->concepto."'
+				);");
+				
+								
+		$stmt2->execute();	
+		
+		
+		
+	}
+	
+	function verSiExisteNota($nrofac,$nroaut){
+		
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		$stmt2 = $link->prepare("select count(*) as count
+								 from fac.tnota where nrofac = '$nrofac' and nroaut = '$nroaut'");
+								
+		$stmt2->execute();	
+		$results=$stmt2->fetchAll(PDO::FETCH_ASSOC);
+		return $results[0]['count'];
+		
+	}
+	function verDatosDeNota($nrofac,$nroaut){
+		
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		
+		$stmt2 = $link->prepare("select id_nota
+								 from fac.tnota where nrofac = '$nrofac' and nroaut = '$nroaut'");
+								
+		$stmt2->execute();	
+		$results=$stmt2->fetchAll(PDO::FETCH_ASSOC);
+		
+		return $results[0]['id_nota'];
+	}
+	
+	
+	
+	
+	
+	
+	
 
 	function generarNota(){
 		

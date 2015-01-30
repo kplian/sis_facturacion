@@ -7,7 +7,7 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 require_once(dirname(__FILE__).'/numLetra.php');
-require_once(dirname(__FILE__).'/../../lib/tcpdf/2dbarcodes.php');
+require_once(dirname(__FILE__).'/../../lib/tcpdf/tcpdf_barcodes_2d.php');
 class ACTNota extends ACTbase{    
 			
 	function listarNota(){
@@ -43,27 +43,11 @@ class ACTNota extends ACTbase{
 
 	function saveForm(){
 		
+		
 		$this->objFunc=$this->create('MODNota');  
 		
-		if($this->objParam->getParametro('tipo_id') == 'FACTURA'){
-			
-			$this->res=$this->objFunc->saveForm($this->objParam);
-		}
-		else if($this->objParam->getParametro('tipo_id') == 'LIQUIDACION')
-		{
-			
-			$this->res=$this->objFunc->saveFormLiquidacion($this->objParam);
-		}
-		else if($this->objParam->getParametro('tipo_id') == 'BOLETO MANUAL')
-		{
-			
-			$this->res=$this->objFunc->saveFormBoletoManual($this->objParam);
-		}
-		else if($this->objParam->getParametro('tipo_id') == 'FACTURA MANUAL')
-		{
-			
-			$this->res=$this->objFunc->saveFormBoletoManual($this->objParam);
-		}
+		
+		$this->res=$this->objFunc->saveForm($this->objParam);
 		
         $this->res->imprimirRespuesta($this->res->generarJson());
     }

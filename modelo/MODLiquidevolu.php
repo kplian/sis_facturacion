@@ -33,61 +33,316 @@ class MODLiquidevolu extends MODbase{
 		$this->captura('estpago','varchar');
 		$this->captura('estado','varchar');
 		
-		
+
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
 		
 		//Devuelve la respuesta
 		return $this->respuesta;
+		
+		
+		
+	}
+	
+	function verTipoDevolucion($nroliqui){
+		
+		//$nroliqui = $this->aParam->getParametro('nroliqui');
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$sql = "select doc.iddoc from liquidoc doc
+				where doc.nroliqui = '$nroliqui'";
+				
+		$result = $informix->prepare($sql);
+						
+		$result->execute();
+		
+			
+		$dosi_result = $result->fetchAll(PDO::FETCH_ASSOC);
+		
+		return trim($dosi_result[0]['IDDOC']);
+		
+				
+				
+				
+		
+	}
+	
+	function liquidevolu(){
+		
+		
+		$nroliqui = $this->aParam->getParametro('nroliqui');
+		
+		$tipo_de_documento = $this->verTipoDevolucion($nroliqui);
+		
+		if($tipo_de_documento == 'BOL'){//CUANDO EL DOCUMENTO SEA BOLETO
+		
+			$datos = $this->liquiboletramos($nroliqui);
+			
+			
+			
+		}elseif($tipo_de_documento == 'FACCOM'){//DOCUMENTO FACTURA COMPOTARIZADA
+		
+			echo "computarizada";
+			exit;
+		
+			
+		}elseif($tipo_de_documento == 'FACMAN'){//DOCUMENTO FACTURA MANUAL
+		
+			
+		}
+		
+		$this->respuesta=new Mensaje();
+				
+		$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+		$this->respuesta->setTotal(1);
+		$this->respuesta->setDatos($datos);
+			
+		
+		
+		return $this->respuesta;
+		
+		
+	}
+	
+	function liquiboletramos($nroliqui){
+		
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql = "select
+            			lite.pais,
+                          lite.estacion,
+                          lite.docmnt,
+                          lite.nroliqui,
+                          lite.nroliqui as concepto,
+                          lite.renglon as cantidad,
+                          lite.idtramo,
+                          lite.billcupon,
+                          lite.cupon,
+                          lite.origen,
+                          lite.destino,
+                          lite.estado,
+                        lite.billcupon,
+                         lite.origen,
+                        lite.destino,
+                        factu.nit,
+                         factu.razon,
+                         factu.monto,
+                         factu.exento,
+                         factu.fecha as fecha_fac,
+                         factu.nroaut,
+                         factu.nrofac
+                         
+                         FROM liquitra lite
+                          left join facturas factu on factu.billete = lite.billcupon
+				        where lite.nroliqui = '$nroliqui'";
+				
+		$result = $informix->prepare($sql);
+						
+		$result->execute();
+		
+			
+		$fetch_result = $result->fetchAll(PDO::FETCH_ASSOC);
+		
+		$i = 0;
+		
+		$concepto = "";
+		$concepto = $fetch_result[0]['billcupon'];
+		
+		foreach ($fetch_result as $item) {
+			if($i == 0){
+				$concepto .= "/".$item["origen"]."/".$item["destino"];
+			}else{
+				$concepto .= "/".$item["destino"];
+			}
+			$i++;
+			
+		}
+		
+		$datos_del_boleto = $this->listarBoletos($fetch_result[0]['billcupon'],$concepto);
+		
+		if(trim($datos_del_boleto[0]['moneda']) != 'BOB'){
+					
+			$conversion = $this->monedaConvercion($datos_del_boleto[0]['moneda'], $datos_del_boleto[0]['importe_original'], $datos_del_boleto[0]['pais'],$datos_del_boleto[0]['fecha']);
+			
+			$datos_del_boleto[0]['importe_original'] = "$conversion";
+			$datos_del_boleto[0]['precio_unitario'] = "$conversion";
+			$datos_del_boleto[0]['total_devuelto'] = "$conversion";
+			$datos_del_boleto[0]['importe_devolver'] = "$conversion";
+		
+		}
+		
+		$datos_del_boleto[0]['fecha_fac'] = date("d-m-Y", strtotime($datos_del_boleto[0]['fecha_fac']));
+		
+		
+		
+		
+		return $datos_del_boleto;
+		
+		
+	}
+	
+	function monedaConvercion($moneda,$importe,$pais,$fecha_boleto){
+				
+			
+		$fecha = date("d-m-Y", strtotime($fecha_boleto));
+		
+		
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql = "select * from cambio where pais = '$pais' and fecha = '$fecha'";
+		
+		
+									
+		$prepare = $informix->prepare($sql);
+		$prepare->execute();
+		
+		
+		// obtengo los datos de razon social y nit
+		$resultado = $prepare->fetchAll(PDO::FETCH_ASSOC); 
+					
+		return $importe*$resultado[0]['tcambio'];
+	
 	}
 	
 	
 	
+	function listarBoletos($billete,$concepto){
+
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_facturas = "select bo.pais,bo.billete as billcupon,
+										bo.billete as nro_billete,
+				                        bo.fecha,
+				                        bo.tcambio,
+				                        bo.pasajero,
+				                        bo.moneda,
+				                        bo.importe as importe_original,
+				                        bo.estado,
+				                        factu.nit,
+				                         factu.razon,
+				                         factu.monto,
+				                         factu.exento,
+				                         factu.fecha as fecha_fac,
+				                         '$concepto' as concepto,
+				                         bo.importe as precio_unitario,
+				                         bo.importe as total_devuelto,
+				                         bo.importe as importe_devolver,
+				                         bo.billete as nro_fac,
+				                         '1' as nro_aut,
+				                         'BOLETO' as tipo
+				                          
+									from boletos bo
+									inner join facturas factu on factu.billete = bo.billete 
+									where bo.billete = '$billete' ";
+									
+		$prepare_facturas = $informix->prepare($sql_facturas);
+		$prepare_facturas->execute();
+		
+		// obtengo los datos de razon social y nit
+		$resultado_factura = $prepare_facturas->fetchAll(PDO::FETCH_ASSOC); 
+				
+		return $resultado_factura;	
+		
+	}
+	
 	function listarLiquitra(){
 		
 		
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='informix.ft_liquitra_sel';
-		$this->transaccion='FAC_LITRA_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		//Definicion de la lista del resultado del query
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
 		
-		/*$this->arreglo = array_merge ($this->arreglo,array(
-									"sort"=>'nroliqui' 
-									 ));*/
 		
+		$nroliqui = $this->aParam->getParametro('nroliqui');
+		
+		
+		
+		
+		
+		
+		
+		try {
+			
+		  	$informix->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);		
+			
+		  
+			$informix->beginTransaction();
+			
+			$sql = "select
+            			lite.pais,
+                          lite.estacion,
+                          lite.docmnt,
+                          lite.nroliqui,
+                          lite.nroliqui as concepto,
+                          lite.renglon as cantidad,
+                          lite.idtramo,
+                          lite.billcupon,
+                          lite.cupon,
+                          lite.origen,
+                          lite.destino,
+                          lite.estado,
+                        lite.billcupon,
+                         lite.origen,
+                        lite.destino
+                         
+                         FROM liquitra lite
+				        where lite.nroliqui = '$nroliqui'";
 
-		$this->captura('pais','varchar');
-		$this->captura('estacion','varchar');
-		$this->captura('docmnt','varchar');
-		$this->captura('nroliqui','varchar');
-		$this->captura('cantidad','int4');
-		$this->captura('idtramo','varchar');
-		$this->captura('billcupon','numeric');
-		$this->captura('cupon','int4');
-		$this->captura('origen','varchar');
-		$this->captura('destino','varchar');
-		$this->captura('estado','varchar');
-		$this->captura('concepto','text');
+				$result = $informix->prepare($sql);
+						
+				$result->execute();
+				
+					
+				$dosi_result = $result->fetchAll(PDO::FETCH_ASSOC);
+				$informix->commit();
+				
+				//var_dump($dosi_result);
+				
+				$this->respuesta=new Mensaje();
+				
+				$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base',$this->procedimiento,$this->transaccion,$this->tipo_procedimiento,$this->consulta);
+				
+				$this->respuesta->setDatos($dosi_result);
+				
+				
+				$this->respuesta->getDatos();
+				
+				
 		
-		
-		
-		
-		
-		
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
-		
-		//Devuelve la respuesta
-		return $this->respuesta;
+		} catch (Exception $e) {			
+		   
+			$informix->rollBack();
+			
+		    $this->respuesta=new Mensaje();
+			if ($e->getCode() == 3) {//es un error de un procedimiento almacenado de pxp
+				$this->respuesta->setMensaje($resp_procedimiento['tipo_respuesta'],$this->nombre_archivo,$resp_procedimiento['mensaje'],$resp_procedimiento['mensaje_tec'],'base',$this->procedimiento,$this->transaccion,$this->tipo_procedimiento,$this->consulta);
+			} else if ($e->getCode() == 2) {//es un error en bd de una consulta
+				$this->respuesta->setMensaje('ERROR',$this->nombre_archivo,$e->getMessage(),$e->getMessage(),'modelo','','','','');
+			} else {//es un error lanzado con throw exception
+				throw new Exception($e->getMessage(), 2);
+			}
+		}	
+				
+		return $this->respuesta;	
+			
+			
 	}
 	
 	
 	function listarInformixLiquidevolu(){
     
         //Definicion de variables para ejecucion del procedimiento
+        
         $this->procedimiento='informix.f_liquidevolu_sel';// nombre procedimiento almacenado
         $this->transaccion='INFORMIX_LIQUIDEVOLU_SEL';//nombre de la transaccion
         $this->tipo_procedimiento='SEL';//tipo de transaccion
@@ -95,9 +350,7 @@ class MODLiquidevolu extends MODbase{
         
         $this->setTipoRetorno('record');
         
-        //$this->setParametro('id_proceso_wf','id_proceso_wf','integer');
-        
-       //Definicion de la lista del resultado del query
+      
         $this->captura('pais','varchar');
 		$this->captura('estacion','varchar');
 		$this->captura('docmnt','varchar');
@@ -106,58 +359,27 @@ class MODLiquidevolu extends MODbase{
 		
         
         
-        //$this->captura('id_estructura_uo','integer');
-        //Ejecuta la funcion
         $this->armarConsulta();
         
-        //echo $this->getConsulta();
+       
         $this->ejecutarConsulta();
         return $this->respuesta;
+		
+		
+		
+		
+		
+		
+		
+		
+	
 
     }
 	
 	
 	
 	
-	function listarBoletos(){
-		
-		
-
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='informix.ft_boletos_sel';
-		$this->transaccion='FAC_BOLE_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		//Definicion de la lista del resultado del query
-		
-
 	
-		$this->captura('billete','numeric');
-		$this->captura('fecha','date');
-		$this->captura('tcambio','numeric');
-		$this->captura('pasajero','varchar');
-		$this->captura('moneda','varchar');
-		$this->captura('importe','numeric');
-		$this->captura('estado','varchar');
-		
-		$this->captura('nit','numeric');
-		$this->captura('razon','varchar');
-		$this->captura('monto','numeric');
-		$this->captura('exento','numeric');
-		$this->captura('fecha_fac','date');
-		
-		$this->captura('nroaut','numeric');
-		$this->captura('nrofac','numeric');
-		
-	
-		
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
-		
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
-
 
 	function listarBoletoEx(){
 		
@@ -294,69 +516,485 @@ class MODLiquidevolu extends MODbase{
 		$link=$cone->conectarPDOInformix();
 		
 		
+		if($this->datosNoPermitidosBoleto()){
+			
 		
 	
 		$billete = $this->aParam->getParametro('billete');
+			
 		$sql_doc = "select count(*) as count from liquidoc where billete = '$billete' ";
 		
 		$stmt = $link->prepare($sql_doc);
 		$stmt->execute();
 		$results=$stmt->fetchAll(PDO::FETCH_ASSOC);
-		if($results[0]['COUNT'] == 0){
-			
-			$sql_nota = "select count(*) as count from notacrdb where billete = '$billete' ";
-			$statement2=$link->prepare($sql_nota);
-			$statement2->execute();
-			$results2=$statement2->fetchAll(PDO::FETCH_ASSOC);
-			
-			if($results2[0]['COUNT'] == 0){
-				
-				//Definicion de variables para ejecucion del procedimientp
-				$this->procedimiento='informix.ft_boletos_sel';
-				$this->transaccion='FAC_BOLE_SEL';
-				$this->tipo_procedimiento='SEL';//tipo de transaccion
-				//Definicion de la lista del resultado del query
-				
 		
-			
-				$this->captura('billete','numeric');
-				$this->captura('fecha','date');
-				$this->captura('tcambio','numeric');
-				$this->captura('pasajero','varchar');
-				$this->captura('moneda','varchar');
-				$this->captura('importe','numeric');
-				$this->captura('estado','varchar');
+	
+			if($results[0]['COUNT'] == 0){
 				
-				$this->captura('nit','numeric');
-				$this->captura('razon','varchar');
-				$this->captura('monto','numeric');
-				$this->captura('exento','numeric');
-				$this->captura('fecha_fac','date');
-		
-				$this->captura('nroaut','numeric');
-				$this->captura('nrofac','numeric');
+				$sql_nota = "select count(*) as count from notacrdb where billete = '$billete' ";
+				$statement2=$link->prepare($sql_nota);
+				
+					
+				$statement2->execute();
+				$results2=$statement2->fetchAll(PDO::FETCH_ASSOC);
+				
+				if($results2[0]['COUNT'] == 0){
+					
+					$sql_facturas = "select bo.billete,
+					                        bo.fecha,
+					                        bo.tcambio,
+					                        bo.pasajero,
+					                        bo.moneda,
+					                        bo.importe,
+					                        bo.estado,
+					                        bo.billete as nrofac,
+					                        '1' as nroaut,
+					                        factu.nit,
+					                         factu.razon,
+					                         factu.monto,
+					                         factu.exento,
+					                         factu.fecha as fecha_fac
+					                         
+										from boletos bo
+										inner join facturas factu on factu.billete = bo.billete 
+										where bo.billete = '$billete' ";
+										
+									
+										
+					$prepare_facturas = $link->prepare($sql_facturas);
+					$prepare_facturas->execute();
+					
+					// obtengo los datos de razon social y nit
+					$resultado_factura = $prepare_facturas->fetchAll(PDO::FETCH_ASSOC); 	
+					
+					
+					
+					$this->respuesta=new Mensaje();
+					
+					$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+					$this->respuesta->setTotal(1);
+					$this->respuesta->setDatos($resultado_factura);
 						
+					
+					
+					
+				}
+			}
+			
+		}else{
+			
+			$this->respuesta=new Mensaje();
+					
+			$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+			$this->respuesta->setTotal(1);
+			$this->respuesta->setDatos("DUPLICADO");	
 				
 			
-				
-				//Ejecuta la instruccion
-				$this->armarConsulta();
-				$this->ejecutarConsulta();
-				
-				//Devuelve la respuesta
-				return $this->respuesta;
-				
-			}
 		}
 	
 		
+		
+		return $this->respuesta;
+		
+	}
+	
+	function datosNoPermitidosBoleto(){
+		$datos_no_permitidos = json_decode($this->aParam->getParametro('datos_no_permitidos'));
+		$billete = $this->aParam->getParametro('billete');
+		
+		
+		
+		$resp = TRUE;
+		
+		foreach ($datos_no_permitidos as $item) {
+			
+			if($item->tipo == 'BOLETO'){
+				
+				if($item->billete == $billete){
+					$resp = FALSE;
+				}
+			}
+			
+		}
+		
+		return $resp;
 		
 		
 		
 	}
 	
 	
+	function datosNoPermitidos(){
+		$datos_no_permitidos = json_decode($this->aParam->getParametro('datos_no_permitidos'));
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		
+		
+		$resp = TRUE;
+		
+		foreach ($datos_no_permitidos as $item) {
+			
+			if($item->tipo == 'FACTURA'){
+				
+				if($item->nrofac == $nrofac && $item->nroaut == $nroaut){
+					$resp = FALSE;
+				}
+			}
+			
+		}
+		
+		return $resp;
+		
+		
+		
+	}
 	
+	function listarFacturaDevolucion(){
+			
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		
+		$this->respuesta=new Mensaje();
+		
+		if($this->datosNoPermitidos()){
+
+		if($this->siExisteComputarizada()){//facturas computarizadas
+			//echo "existe";
+			$tipo_de_factura = $this->facturaComputarizada();
+			$conceptos = $this->conceptosComputarizada();
+			
+			
+		}elseif($this->siExisteManual()){//facturas manuales
+			
+			$monto = 0;
+			$tipo_de_factura = $this->facturaManual();
+			$conceptos = $this->ConceptosManual();
+			
+			$monto = $monto + $manual[0]['monto'];
+			
+			if($this->siExisteFacturas()){
+				
+				$facturas = $this->facturaFacturas();
+				$monto = $monto + $facturas[0]['monto'];
+				$tipo_de_factura[0]['razon'] = $facturas[0]['razon'];
+				$tipo_de_factura[0]['nit'] = $facturas[0]['nit'];
+				
+				foreach ($conceptos as $item) {
+					$conceptos[0]['razon'] = $facturas[0]['razon'];
+					$conceptos[0]['nit'] = $facturas[0]['nit'];
+				}
+				
+				
+			}
+			
+			
+			
+		}elseif($this->siExisteManual() == false){ //facturas de la tabla facturas
+			
+			
+			if($this->siExisteFacturas()){
+				
+				$tipo_de_factura = $this->facturaFacturas();
+				$conceptos = $this->ConceptosFacturas();
+				
+			}
+			
+			
+			
+			
+		}
+		
+		
+				
+		$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+		$this->respuesta->setTotal(1);
+		$this->respuesta->setDatos($tipo_de_factura);
+		
+		
+		$this->respuesta->extraData	= $conceptos;
+		
+		
+
+		
+		
+		
+		}else{
+			
+			$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+			$this->respuesta->setTotal(1);
+			$this->respuesta->setDatos("DUPLICADO");
+		
+			
+			
+		}
+		
+		return $this->respuesta;
+		
+				
+		
+	}
+	
+	function siExisteComputarizada(){
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT  COUNT(*) as count from factucom where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		if($resultado_fac[0]['count'] > 0){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
+	}
+	
+	function facturaComputarizada(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT * from factucom where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		return $resultado_fac;
+		
+	}
+	
+	
+	
+	function conceptosComputarizada(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql = "select con.concepto,
+						faco.pais,
+						faco.estacion,
+						faco.nroaut,
+						faco.cantidad,
+						faco.preciounit as precio_unitario,
+						faco.importe as importe_original,
+						fac.razon,
+						fac.nit
+						 from factucomcon faco
+						 inner join concefaccom con on con.tipocon = faco.tipocon
+						 inner join factucom fac on fac.nroaut = faco.nroaut
+						 where con.nroconce = faco.nroconce 
+						 and fac.nrofac = faco.nrofac
+						 and faco.nrofac = '$nrofac' and faco.nroaut = '$nroaut'";
+						 
+						 
+		$prepare_con = $informix->prepare($sql);
+		$prepare_con->execute();
+		
+	
+		$resultado_con = $prepare_con->fetchAll(PDO::FETCH_ASSOC); 
+		
+		
+	
+		
+		
+		return $resultado_con;
+		
+	}
+
+
+	function siExisteManual(){
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT  COUNT(*) as count from factuman where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		if($resultado_fac[0]['count'] > 0){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
+	}
+	
+	function siExisteFacturas(){
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT COUNT(*) as count from facturas where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		if($resultado_fac[0]['count'] > 0){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
+	}
+	
+	
+	
+	function facturaManual(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT * from factuman where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		return $resultado_fac;
+		
+	}
+	
+	function ConceptosManual(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = "select
+					con.concepto,
+					faco.pais,
+					faco.estacion,
+					faco.importe as importe_original,
+					fac.razon,
+					fac.nit,
+					fac.monto as importe_original,
+					fac.monto,
+					fac.nrofac,
+					fac.nroaut
+					 from factumancon faco
+					 inner join concefac con on con.tipocon = faco.tipdoc
+					 inner join factuman fac on fac.nroaut = faco.nroaut
+					 where con.nroconce = faco.nroconce 
+					 and fac.nrofac = faco.nrofac
+					 and faco.nrofac = '$nrofac' and faco.nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		
+		return $resultado_fac;
+		
+	}
+	
+	function facturaFacturas(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = " SELECT * from facturas where nrofac = '$nrofac' and nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		return $resultado_fac;
+		
+	}
+	
+	function ConceptosFacturas(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();	
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql_fac = "select
+					con.concepto,
+					faco.pais,
+					faco.estacion,
+					faco.importe as importe_original,
+					fac.razon,
+					fac.nit,
+					fac.monto as importe_original,
+					fac.monto,
+					fac.nrofac,
+					fac.nroaut
+					 from factumancon faco
+					 inner join concefac con on con.tipocon = faco.tipdoc
+					 inner join facturas fac on fac.nroaut = faco.nroaut
+					 where con.nroconce = faco.nroconce 
+					 and fac.nrofac = faco.nrofac
+					 and faco.nrofac = '$nrofac' and faco.nroaut = '$nroaut'";
+									
+		$prepare_fac = $informix->prepare($sql_fac);
+		$prepare_fac->execute();
+		
+	
+		$resultado_fac = $prepare_fac->fetchAll(PDO::FETCH_ASSOC); 
+		
+		
+		return $resultado_fac;
+		
+	}
 			
 	
 			

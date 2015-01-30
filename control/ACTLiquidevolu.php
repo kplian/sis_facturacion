@@ -177,7 +177,14 @@ class ACTLiquidevolu extends ACTbase{
 	
 	
 	
-	
+	function listarFacturaDevolucion(){
+		
+		$this->objFunc=$this->create('MODLiquidevolu');
+			
+		$this->res=$this->objFunc->listarFacturaDevolucion($this->objParam);
+		
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
 	
 				
 	

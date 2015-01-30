@@ -45,36 +45,68 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             });    	
     	//cantidad,detalle,peso,totalo
         var Items = Ext.data.Record.create([{
-                        name: 'cantidad',
-                        type: 'int'
-                    }, {
-                        name: 'Concepto',
-                        type: 'string'
-                    },{
-                        name: 'p/Unit',
-                        type: 'float'
-                    },{
-                        name: 'Importe Original',
-                        type: 'float'
-                    }
-                    ]);
+                            name: 'cantidad',
+	                        type: 'int'
+	                    }, {
+	                        name: 'Concepto',
+	                        type: 'string'
+	                    },{
+	                        name: 'p/Unit',
+	                        type: 'float'
+	                    },{
+	                        name: 'Importe Original',
+	                        type: 'float'
+	                    },{
+	                        name: 'Importe a Devolver',
+	                        type: 'float'
+	                    },{
+	                        name: 'Exento',
+	                        type: 'float'
+	                    },{
+	                        name: 'Total Devuelto',
+	                        type: 'float'
+	                    },{
+	                        name: 'nro_liqui',
+	                        type: 'string'
+	                    },{
+	                        name: 'nro_billete',
+	                        type: 'string'
+	                    },{
+	                        name: 'nro_nit',
+	                        type: 'string'
+	                    },{
+	                        name: 'razon',
+	                        type: 'string'
+	                    },{
+	                        name: 'fecha_fac',
+	                        type: 'string'
+	                    },{
+	                        name: 'nro_fac',
+	                        type: 'string'
+	                    },{
+	                        name: 'nro_aut',
+	                        type: 'string'
+	                    }
+	                    ]);
                     
                     
                     
                     
                    
         this.mestore = new Ext.data.JsonStore({
+        	
 					url: '../../sis_facturacion/control/FacturaDetalle/listarFacturaDetalle',
 					id: 'id_factura_detalle',
 					root: 'datos',
-					/*sortInfo: {
-						field: 'id_factura_detalle',
-						direction: 'ASC'
-					},*/
 					totalProperty: 'total',
-					fields: ['id_factura_detalle','cantidad', 'concepto','precio_unitario','importe','nroliqui','billcupon','origen','destino'],
+					fields: ['concepto','importe_original','cantidad',
+							'nroliqui','billcupon','razon','nit','exento',
+							'nrofac','nroaut','fecha_fac','precio_unitario',
+							'importe_devolver','total_devuelto','tipo','nro_billete',
+							'nro_fac','nro_aut'],
 					remoteSort: true,
 					baseParams: {dir:'ASC',sort:'nroliqui',limit:'50',start:'0'}
+					
 				});
         
          var editor = new Ext.ux.grid.RowEditor({
@@ -98,7 +130,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 
         
         this.megrid = new Ext.grid.GridPanel({
-        	padding: '0 50 0 0',
+        	padding: '0 0 0 0',
                     title:'Detalle',
                     store:  this.mestore,
                   
@@ -117,9 +149,10 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                    
                     tbar: [{
                         /*iconCls: 'badd',*/
-                        text: '<i class="fa fa-plus-circle fa-lg"></i> Agregar Boleto',
+                        text: '<i class="fa fa-plus-circle fa-lg"></i> Agregar',
                         scope:this,
                         width: '100',
+                       
                         handler: function(){
                             var e = new Items({
                                 cantidad:1,
@@ -171,6 +204,35 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                             return ((v === 0 || v > 1) ? '(' + v +' items)' : '(1 item)');
                         },
                     },
+                    {
+                        
+                        header: 'tipo',
+                        dataIndex: 'tipo',
+                        
+                        hidden: false,
+						hideable: false,
+                        width: 100,
+                        sortable: false,
+                        
+                        editor: {
+                        	
+                        	 xtype: 'combo',
+                        	name: 'tipo',
+			                fieldLabel: 'Tipo',
+			                allowBlank: true,
+			                emptyText:'Tipo...',
+			                typeAhead: true,
+			                triggerAction: 'all',
+			                lazyRender:true,
+			                mode: 'local',
+			                store:['FACTURA','BOLETO','CONCEPTO'],
+			                width:200 ,
+			                enableKeyEvents: true,
+				            
+				        }
+						
+                        
+                    },
                    
                     {
                         header: 'Concepto',
@@ -184,7 +246,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 
 						    enableKeyEvents: true,
 						    name:'billete_text',
-						    allowBlank: false,
+						    allowBlank: true,
 						    id:'input_concepto',
 						    
 						    
@@ -193,7 +255,69 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                        
                        
                             
-                    },{
+                    }
+                    ,{
+                        
+                        header: 'nro_aut',
+                        dataIndex: 'nro_aut',
+                        
+                        hidden: false,
+						hideable: false,
+                        width: 100,
+                        sortable: false,
+                         editor:new Ext.form.TextField({
+
+						    enableKeyEvents: true,
+						   
+						    allowBlank: true,
+						    id:'input_aut',
+						   
+						    
+						    
+						})
+                        
+                    },
+                    {
+                        
+                        header: 'nro_fac',
+                        dataIndex: 'nro_fac',
+                        
+                        hidden: false,
+						hideable: false,
+                        width: 100,
+                        sortable: false,
+                         editor:new Ext.form.TextField({
+
+						    enableKeyEvents: true,
+						  
+						    allowBlank: true,
+						    id:'input_fac',
+						 
+						    
+						    
+						})
+                        
+                    },
+                    {
+                        
+                        header: 'fecha_fac',
+                        dataIndex: 'fecha_fac',
+                        
+                        hidden: false,
+						hideable: false,
+                        width: 100,
+                        sortable: false,
+                        editor: {
+			                xtype: 'datefield',
+			                allowBlank: true,
+			                minValue: '01/01/2006',
+			                minText: 'Can\'t have a start date before the company existed!',
+			                maxValue: (new Date()).format('m/d/Y')
+			            }
+                        
+                    },
+                    
+                    {
                         xtype: 'numbercolumn',
                         header: 'P/Unit',
                         dataIndex: 'precio_unitario',
@@ -225,7 +349,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         summaryType: 'sum',
                         editor: {
                             xtype: 'numberfield',
-                            allowBlank: false,
+                            allowBlank: true,
                              disabled :true,
                              id:'input_importe_original'
                            
@@ -242,7 +366,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         editor: {
                         	 enableKeyEvents: true,
                             xtype: 'numberfield',
-                            allowBlank: false,
+                            allowBlank: true,
                            
                         }
                     }
@@ -261,7 +385,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         editor: {
                         	 enableKeyEvents: true,
                             xtype: 'numberfield',
-                            allowBlank: false,
+                            allowBlank: true,
                             minValue: 0
                         }
                     },{
@@ -297,7 +421,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         header: 'nro_billete',
                         dataIndex: 'nro_billete',
                       
-                        hidden: true,
+                        hidden: false,
 						hideable: false,
                         width: 100,
                         sortable: false
@@ -321,36 +445,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         width: 100,
                         sortable: false
                         
-                    },{
-                        
-                        header: 'fecha_fac',
-                        dataIndex: 'fecha_fac',
-                        
-                        hidden: false,
-						hideable: false,
-                        width: 100,
-                        sortable: false
-                        
-                    },{
-                        
-                        header: 'nro_fac',
-                        dataIndex: 'nro_fac',
-                        
-                        hidden: false,
-						hideable: false,
-                        width: 100,
-                        sortable: false
-                        
-                    },{
-                        
-                        header: 'nro_aut',
-                        dataIndex: 'nro_aut',
-                        
-                        hidden: false,
-						hideable: false,
-                        width: 100,
-                        sortable: false
-                        
                     }
             
             ]
@@ -362,9 +456,10 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     
         
         this.borderForm = true;
+        
         this.frameForm = false; 
-        this.paddingForm = '5 40 5 40';
-        this.bodyStyle ='padding:30px 5px 0',
+        this.paddingForm = '5 40 5 0';
+        this.bodyStyle ='padding:0px 5px 0',
         this.Grupos = [
             {
             	
@@ -372,20 +467,23 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                 autoScroll: true,
                 xtype: 'panel',
                 bbar: this.toolBar,
+                 
                 width: 850,
                 title: 'Formulario de FormNotas',
                 border: false,
                 frame: true,
-                padding: '5 0 20 50',
+                padding: '5 0 20 0',
                 
                 
-                margins:{top:0, right:0, bottom:0, left:50},
+                margins:{top:0, right:0, bottom:0, left:0},
                 
                 defaults: {
                    border: false
+                   
                 },            
                 items: [{
                             xtype: 'fieldset',
+                            margins:{top:0, right:0, bottom:0, left:50},
                             layout: 'column',
                             title: '<h1 style="color:111; font-size:12px;">Tipo de Devolución ...</h1>',
                             width: 850,
@@ -396,9 +494,11 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					        },
                             autoHeight: true,
                             padding: '0 0 0 0',
+                            
                             items: [
                                 {
                                     layout: 'form',
+                                    
                                     border: false,
                                     itemId:'origen_destino',
                                     items: [],
@@ -426,45 +526,12 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                            },
                          
                          
-                       /*  {
-                            xtype: 'fieldset',
-                            layout: 'column',
-                            title: 'Buscar ...',
-                            width:900,
-                            autoHeight: true,
-                            padding: '0 0 0 40',
-                            items: [
-                                {
-                                    layout: 'form',
-                                    border: false,
-                                    itemId:'origen_destino',
-                                    items: [],
-                                    labelWidth:40,
-                                    padding: '0 20 0 0',
-                                    id_grupo:3                                    
-                                },{
-                                    layout: 'form',
-                                    border: false,
-                                    items: [],
-                                    padding: '0 10 0 0',
-                                      labelWidth:40,
-                                    id_grupo:4
-                                },{
-                                    layout: 'form',
-                                    border: false,
-                                    items: [],
-                                    padding: '0 10 0 0',
-                                      labelWidth:70,
-                                    id_grupo:5
-                                }
-                                
-                              ],
-                                        
-                           },*/
+                       
                            
                            
                             {
                             xtype: 'fieldset',
+                            margins:{top:0, right:0, bottom:0, left:50},
                             layout: 'column',
                             title: ' <h1 style="color:111; font-size:12px;">Datos ...</h1>',
                             width:900,
@@ -510,11 +577,11 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                                 xtype:'tabpanel',
                                 //layout:'fit',
                                 /*padding:'0 0 0 50',*/
-                                margins:{top:0, right:0, bottom:0, left:50},
+                                margins:{top:0, right:0, bottom:0, left:0},
                                
                                 border:false,
                                 plain:true,
-                                width:850,
+                                width:'100%',
                                 activeTab: 0,
                                 height:235,
                                 items:[
@@ -702,7 +769,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             else if(this.Cmp.tipo_id.getValue() == 'BOLETO MANUAL'){
             	
             	
-            	
+            	console.log(this.megrid);
             	//this.megrid.initialConfig.columns[3].editor.disabled = true;
             	//this.megrid.initialConfig.columns[3].editor.enable = false;
             	//console.log(this.megrid.initialConfig.columns[3].editor.disabled);
@@ -807,283 +874,18 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     		this.megrid.remove();
     		this.megrid.store.removeAll(); 
     		
-    		console.log(this.megrid); 
+    		
     	
     		this.megrid.store.baseParams = {}; // limpio los parametro enviados
             this.megrid.store.baseParams.nroliqui=this.Cmp.liquidevolu.getValue();            
             //this.Cmp.id_factura.modificado=true;
             
+            
+           
            	this.megrid.store.load({params:{start:0,limit:20}, 
 		       callback : function (r) {	       				
-		    		if (r.length > 0 ) {	       				
-	    				console.log(r[0].data.billcupon);
-	    				
-	    				
-	    				
-	    				Ext.Ajax.request({
-				                url : '../../sis_facturacion/control/Liquidevolu/listarBoletos',
-				                params:{'billete':r[0].data.billcupon,'start':0,'limit':1},
-				                success : function(resp){ 
-				                	var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-				                	
-				                	if(reg.datos){
-				                		
-				                		var Date = reg.datos[0].fecha;
-										var elem = reg.datos[0].fecha.split('-');
-										dia = elem[0];
-										mes = elem[1];
-										anio = elem[2];
-							
-										var fecha_cambiada = anio+'/'+mes+'/'+dia;
-										
-										if(reg.datos[0].moneda != 'BOB'){
-											
-											if(reg.datos[0].moneda == 'USD'){
-												//alert('dolar');
-											}
-											else if(reg.datos[0].moneda == 'EUR'){
-												
-												//alert('euro');
-											}
-										}
-										
-				                		this.Cmp.importe.setValue(reg.datos[0].importe);
-				                		this.Cmp.moneda.setValue(reg.datos[0].moneda);
-				                		this.Cmp.boleto.setValue(reg.datos[0].billete);
-				                		this.Cmp.pasajero.setValue(reg.datos[0].pasajero);
-				                		this.Cmp.tcambio.setValue(reg.datos[0].tcambio);
-				                		this.Cmp.fecha.setValue(fecha_cambiada);
-				                		
-				                		
-				                		
-				                		
-				                		var cantidad_registros = this.megrid.store.getCount();
-
-				                           
-								                		
-				                		var liqui_concepto='';
-				                		var nroliqui;
-				                		var aux = 0;
-				                		liqui_concepto += r[0].data.billcupon +" ";
-				                		
-				                		for (var i = 0; i < cantidad_registros; i++) {
-    		
-    										rec2 = this.megrid.store.getAt(i);
-    										
-    										liqui_concepto += rec2.data.origen +"/ "+ rec2.data.destino+"/ ";
-    										nroliqui = rec2.data.nroliqui;
-    										rec2.data.importe = reg.datos[0].importe;
-    										
-    										rec2.data.precio_unitario= 0;
-    										rec2.data.exento= 0;
-    										
-    										aux++;
-    										
-						    										
-				                            this.megrid.getView().refresh();
-				                            console.log(this.megrid.getSelectionModel(1));
-    										
-    									
-									        
-    									}
-    										var Items = Ext.data.Record.create([{
-															                        name: 'cantidad',
-															                        type: 'int'
-															                    }, {
-															                        name: 'Concepto',
-															                        type: 'string'
-															                    },{
-															                        name: 'p/Unit',
-															                        type: 'float'
-															                    },{
-															                        name: 'Importe Original',
-															                        type: 'float'
-															                    },{
-															                        name: 'Importe a Devolver',
-															                        type: 'float'
-															                    },{
-															                        name: 'Exento',
-															                        type: 'float'
-															                    },{
-															                        name: 'Total Devuelto',
-															                        type: 'float'
-															                    },{
-															                        name: 'nro_liqui',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_billete',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_nit',
-															                        type: 'string'
-															                    },{
-															                        name: 'razon',
-															                        type: 'string'
-															                    },{
-															                        name: 'fecha_fac',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_fac',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_aut',
-															                        type: 'string'
-															                    }
-															                    ]);
-    										
-    										var total_de = reg.datos[0].monto - reg.datos[0].exento;
-    										var e = new Items({
-								                                cantidad:1,
-								                                concepto:liqui_concepto,
-								                                precio_unitario:reg.datos[0].monto,
-								                                importe_original:reg.datos[0].monto,
-								                                importe_devolver:reg.datos[0].monto,
-								                                exento:reg.datos[0].exento,
-								                                total_devuelto: total_de,
-								                                nro_liqui:r[0].data.nroliqui,
-								                                nro_billete:r[0].data.billcupon,
-								                                nro_nit:reg.datos[0].nit,
-								                                razon:reg.datos[0].razon,
-								                                fecha_fac:reg.datos[0].fecha_fac,
-								                                nro_fac:r[0].data.billcupon,
-								                                nro_aut:1
-
-								                            });
-								                            
-    									
-    										
-									        this.megrid.remove();
-    										this.megrid.store.removeAll(); 
-									        this.mestore.insert(0, e);
-                            				this.megrid.getView().refresh();
-									        
-									        
-									        
-    									//this.Cmp.liqui_concepto.setValue(liqui_concepto);
-				                		
-				                		       		  	               
-						            } else {		                
-						                alert('Ocurrio un error al obtener el billete de esta liquidacion')
-						            }                 	
-				                },
-				                failure : this.conexionFailure,
-				                timeout : this.timeout,
-				                scope : this
-				         });//fin ajax 1 
-				         
-				         
-				         
-				         //comienzo ajax2
-				         Ext.Ajax.request({
-				                url : '../../sis_facturacion/control/Liquidevolu/listarBoletoOri',
-				                params:{'billete':r[0].data.billcupon,'start':0,'limit':1},
-				                success : function(resp){ 
-				                	var reg_ex = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-				                	
-				                
-				                		
-				                		if(reg_ex.datos){
-				                			
-				                			if(reg_ex.datos[0].bolori != ""){
-				                				
-				                				
-				                				var Items = Ext.data.Record.create([{
-															                        name: 'cantidad',
-															                        type: 'int'
-															                    }, {
-															                        name: 'Concepto',
-															                        type: 'string'
-															                    },{
-															                        name: 'p/Unit',
-															                        type: 'float'
-															                    },{
-															                        name: 'Importe Original',
-															                        type: 'float'
-															                    },{
-															                        name: 'Importe a Devolver',
-															                        type: 'float'
-															                    },{
-															                        name: 'Exento',
-															                        type: 'float'
-															                    },{
-															                        name: 'Total Devuelto',
-															                        type: 'float'
-															                    },{
-															                        name: 'nro_billete',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_nit',
-															                        type: 'string'
-															                    },{
-															                        name: 'razon',
-															                        type: 'string'
-															                    },{
-															                        name: 'fecha_fac',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_fac',
-															                        type: 'string'
-															                    },{
-															                        name: 'nro_aut',
-															                        type: 'string'
-															                    }
-															                    ]);
-															                    
-													  var es = new Items();
-													  var total_de;
-												
-													reg_ex.datos.forEach( function( item ) {
-														
-												  
-												    	total_de = item.monto - item.exento;
-													   es = new Items({
-											                                cantidad:1,
-											                                concepto:'TKT '+item.bolori,
-											                                precio_unitario:item.monto,
-											                                importe_original:item.monto,
-											                                importe_devolver:item.monto,
-											                                exento:item.exento,
-											                                total_devuelto:total_de,
-											                                nro_billete:item.bolori,
-											                                nro_nit:item.nit,
-											                                razon:item.razon,
-											                                fecha_fac:item.fecha_fac,
-											                                nro_fac:item.bolori,
-											                                nro_aut:1
-											                                
-											                            });
-			    									
-			    										
-												     
-												        
-												    
-												    });	
-												    
-												    this.mestore.insert(0, es);
-			                            				this.megrid.getView().refresh();
-    												
-				                				
-				                			}
-				                		
-					                	
-				                		
-				                		
-										
-									        
-    									//this.Cmp.liqui_concepto.setValue(liqui_concepto);
-				                		
-				                		       		  	               
-							            } else {		                
-							                alert('Ocurrio un error al obtener el billete de esta liquidacion')
-							            }  
-						                       	
-				                },
-				                failure : this.conexionFailure,
-				                timeout : this.timeout,
-				                scope : this
-				         });
-				         //fin ajax 2
-	    			}     
+		    		console.log(r); 
+		    		
 		    			    		
 		    	},scope : this
 		    });
@@ -1095,37 +897,72 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            
            
            
-          this.megrid.initialConfig.columns[2].editor.on('keyup',function(){   
+          this.megrid.initialConfig.columns[3].editor.on('keyup',function(){   
           	
-          	
-          	if(this.megrid.initialConfig.columns[2].editor.getValue().length == 13 && this.Cmp.tipo_id.getValue() != 'FACTURA MANUAL' )
+          	if(this.megrid.initialConfig.columns[2].editor.getValue() == 'BOLETO'){
+          		
+          	if(this.megrid.initialConfig.columns[3].editor.getValue().length == 13 && this.Cmp.tipo_id.getValue() != 'FACTURA MANUAL' )
        		{
        			
        			Phx.CP.loadingShow();
        			
        			
-	       		console.log(this.megrid);	
+       			var cantidad_registros = this.megrid.store.getCount();
+		    	var record;
+		    	
+		    	var arra = new Array();
+		    	
+		    	
+		    	for (var i = 0; i < cantidad_registros; i++) {
+		    		
+		    		record = this.megrid.store.getAt(i);
+		    		console.log(record)
+					if(record.data.tipo == 'BOLETO'){
+						
+					
+					arra[i] = new Object();
+			        arra[i].billete = record.data.nro_billete
+			        arra[i].tipo = record.data.tipo;
+			        
+			       }
+					       
+				}
+       		
+	       	
 	       			//comienzo ajax
 		         Ext.Ajax.request({
 		         	
 	         		
 	                url : '../../sis_facturacion/control/Liquidevolu/listarBoletosExistente',
-	                params:{'billete':this.megrid.initialConfig.columns[2].editor.getValue(),'start':0,'limit':1},
+	                params:{'billete':this.megrid.initialConfig.columns[3].editor.getValue(),
+	                		'datos_no_permitidos':Ext.encode(arra),
+	                		'start':0,'limit':1},
 	                success : function(resp){ 
 	                	
-	                	console.log(resp);
+	                	
 	                	Phx.CP.loadingHide();
 	                	var reg_new = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-	                
+	                	
+	                	
+	                	
+	                	
 	                		if(reg_new.datos){
 	                			
 	                			//editor.stopEditing();
 	                			
 	                			
+	                		
+	                		
+	                			if(reg_new.datos != "DUPLICADO"){
+	                	
 	                			var Items = Ext.data.Record.create([{
 							                        name: 'cantidad',
 							                        type: 'int'
-							                    }, {
+							                    },{
+							                        name: 'tipo',
+							                        type: 'string'
+							                    },
+							                    {
 							                        name: 'Concepto',
 							                        type: 'string'
 							                    },{
@@ -1166,23 +1003,25 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 															                    
 								  var es = new Items();
 												
-												
+											
 												  
-									var total_de = reg_new.datos[0].monto - reg_new.datos[0].exento;			    
+									var total_de = reg_new.datos[0].MONTO - reg_new.datos[0].EXENTO;			    
 													  
 			    				es = new Items({
 			                                cantidad:1,
-			                                concepto:reg_new.datos[0].billete,
-			                                precio_unitario:reg_new.datos[0].monto,
-			                                importe_original:reg_new.datos[0].monto,
-			                                importe_devolver:reg_new.datos[0].monto,
-			                                exento:reg_new.datos[0].exento,
+			                                tipo:this.megrid.initialConfig.columns[2].editor.getValue(),
+			                                
+			                                concepto:reg_new.datos[0].BILLETE,
+			                                precio_unitario:reg_new.datos[0].MONTO,
+			                                importe_original:reg_new.datos[0].MONTO,
+			                                importe_devolver:reg_new.datos[0].MONTO,
+			                                exento:reg_new.datos[0].EXENTO,
 			                                total_devuelto:total_de,
-			                                nro_billete:reg_new.datos[0].billete,
-			                                nro_nit:reg_new.datos[0].nit,
-			                                razon:reg_new.datos[0].razon,
-			                                fecha_fac:reg_new.datos[0].fecha_fac,
-			                                nro_fac:reg_new.datos[0].billete,
+			                                nro_billete:reg_new.datos[0].BILLETE,
+			                                nro_nit:reg_new.datos[0].NIT,
+			                                razon:reg_new.datos[0].RAZON,
+			                                fecha_fac:reg_new.datos[0].FECHA_FAC,
+			                                nro_fac:reg_new.datos[0].BILLETE,
 			                                nro_aut:1
 			                                
 			                            });					
@@ -1202,7 +1041,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	                                this.mestore.remove(r);
 	                            }
 	                	
-	                		
+		                		}else{
+		                			alert("Billete Duplicado en la vista");
+		                		}
 	                		       		  	               
 				            } else {		                
 				                alert('Ocurrio un error al obtener el billete de esta liquidacion')
@@ -1217,11 +1058,266 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
        			
        			
        		}
+       		}
           	
           },this);
           
           
-          
+           this.megrid.initialConfig.columns[2].editor.on('select',function(){ 
+           	
+        	 console.log('llega');
+        	 
+        	 if(this.megrid.initialConfig.columns[2].editor.getValue() == 'BOLETO'){
+        	 	
+        	 	//si escoge boleto en la grilla
+        	 	
+        	 	
+            	Ext.getCmp('input_fac').addClass('x-item-disabled');
+            	Ext.getCmp('input_fac').disable(true);
+            	
+            	Ext.getCmp('input_aut').addClass('x-item-disabled');
+            	Ext.getCmp('input_aut').disable(true);	
+            	
+            	
+            	Ext.getCmp('input_concepto').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_concepto').enable(true);
+            	
+            
+            	
+            	
+        	 }else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'FACTURA'){
+        	 	
+        	 	Ext.getCmp('input_concepto').addClass('x-item-disabled');
+            	Ext.getCmp('input_concepto').disable(true);	
+        	 	
+        	 	Ext.getCmp('input_fac').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_fac').enable(true);
+        	 	
+        	 	Ext.getCmp('input_aut').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_aut').enable(true);
+        	 	
+        	 	
+        	 	
+        	 }else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'CONCEPTO'){
+        	 	
+        	 	
+        	 	Ext.getCmp('input_fac').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_fac').enable(true);
+        	 	
+        	 	Ext.getCmp('input_aut').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_aut').enable(true);
+        	 	
+        	 	Ext.getCmp('input_concepto').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_concepto').enable(true);
+        	 }
+           
+           },this);
+           
+           
+           
+           //factura
+           this.megrid.initialConfig.columns[5].editor.on('blur',function(){   
+          		
+          		
+          		if(this.megrid.initialConfig.columns[2].editor.getValue() == 'FACTURA'){
+       			Phx.CP.loadingShow();
+       			
+       			var cantidad_registros = this.megrid.store.getCount();
+		    	var record;
+		    	
+		    	var arra = new Array();
+		    	
+		    	
+		    	for (var i = 0; i < cantidad_registros; i++) {
+		    		
+		    		record = this.megrid.store.getAt(i);
+					if(record.data.tipo == 'FACTURA'){
+						
+					
+					arra[i] = new Object();
+			        arra[i].nrofac = record.data.nro_fac;
+			        arra[i].nroaut = record.data.nro_aut;
+			        arra[i].tipo = record.data.tipo;
+			        
+			       }
+					       
+				}
+		    		
+				   
+    			
+       			
+       			Ext.Ajax.request({
+		         	
+	         		
+	                url : '../../sis_facturacion/control/Liquidevolu/listarFacturaDevolucion',
+	                params:{'nrofac':this.megrid.initialConfig.columns[5].editor.getValue(),
+	                		'nroaut':this.megrid.initialConfig.columns[4].editor.getValue(),
+	                		'datos_no_permitidos':Ext.encode(arra),
+	                		'start':0,'limit':1},
+	                success : function(resp){ 
+	                	
+	                	
+	                	Phx.CP.loadingHide();
+	                	var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+	                	
+	                	if(reg.datos == "DUPLICADO"){
+	                		alert("datos duplicados en la vista intente con otra factura");
+	                	}
+	                	if(reg.datos){
+	                		
+	                		
+	                		this.resetear();
+	                		
+        					this.Cmp.nit.setValue(reg.datos[0].nit);
+        					this.Cmp.nro_factura.setValue(reg.datos[0].nrofac);
+        					this.Cmp.autorizacion.setValue(reg.datos[0].nroaut);
+        					this.Cmp.razon.setValue(reg.datos[0].razon);
+        					this.Cmp.fecha.setValue(reg.datos[0].fecha);
+	                		
+	                		
+	                		
+			            	
+			            	this.Cmp.nro_factura.show();
+			        		this.Cmp.autorizacion.show();
+			        		this.Cmp.nit.show();
+			        		this.Cmp.razon.show();
+			        		
+			        		this.Cmp.nro_factura.enable();
+			        		this.Cmp.razon.enable();
+			        		this.Cmp.nit.enable();
+			        		this.Cmp.fecha.enable();
+			        		this.Cmp.importe.enable();
+			        		this.Cmp.autorizacion.enable();
+			        		
+			        		this.Cmp.id_moneda.hide();
+			        		this.Cmp.pasajero.hide();
+			        		this.Cmp.boleto.hide();
+			        		this.Cmp.moneda.hide();
+			        		this.Cmp.tcambio.hide();
+			        		
+			        		
+			        		if(reg.countData){
+			        			
+			        		
+			        		var Items = Ext.data.Record.create([{
+							                        name: 'cantidad',
+							                        type: 'int'
+							                    },{
+							                        name: 'tipo',
+							                        type: 'string'
+							                    },
+							                    {
+							                        name: 'Concepto',
+							                        type: 'string'
+							                    },{
+							                        name: 'p/Unit',
+							                        type: 'float'
+							                    },{
+							                        name: 'Importe Original',
+							                        type: 'float'
+							                    },{
+							                        name: 'Importe a Devolver',
+							                        type: 'float'
+							                    },{
+							                        name: 'Exento',
+							                        type: 'float'
+							                    },{
+							                        name: 'Total Devuelto',
+							                        type: 'float'
+							                    },{
+							                        name: 'nro_billete',
+							                        type: 'string'
+							                    },{
+							                        name: 'nro_nit',
+							                        type: 'string'
+							                    },{
+							                        name: 'razon',
+							                        type: 'string'
+							                    },{
+							                        name: 'fecha_fac',
+							                        type: 'string'
+							                    },{
+							                        name: 'nro_fac',
+							                        type: 'string'
+							                    },{
+							                        name: 'nro_aut',
+							                        type: 'string'
+							                    }
+							                    ]);
+															                    
+								  var es = new Items();
+												
+											
+												  
+										    
+								
+								for (var i = 0; i <reg.countData.length; i++) {				  
+			    				es = new Items({
+			                                cantidad:1,
+			                                tipo:'FACTURA',
+			                                
+			                                concepto:reg.countData[i].concepto,
+			                                precio_unitario:reg.countData[i].precio_unitario,
+			                                importe_original:reg.countData[i].importe_original,
+			                                importe_devolver:reg.countData[i].importe_original,
+			                                exento:0,
+			                                total_devuelto:0,
+			                                nro_billete:reg.countData[i].concepto,
+			                                nro_nit:reg.countData[i].nit,
+			                                razon:reg.countData[i].razon,
+			                                fecha_fac:reg.countData[i].fecha,
+			                                nro_fac:reg.datos[0].nrofac,
+			                                nro_aut:reg.datos[0].nroaut
+			                                
+			                            });	
+			                            
+			                             this.mestore.insert(0, es);
+			                             this.megrid.getView().refresh();
+                    			
+							    
+								}				    
+												    
+								var se = this.megrid.getSelectionModel().getSelections();
+	                            console.log(se);
+	                            
+							   
+							    
+                    			
+                    			
+	                       
+			                            				
+	                            
+	                            for(var i = 0, r; r = se[i]; i++){
+	                            	
+	                            	 
+	                                this.mestore.remove(r);
+	                            }
+	                            
+	                            
+                    			
+                    			}
+			        		
+			        		
+	                	}
+	                	
+	                	
+	                	
+			    
+	                },
+	                failure : this.conexionFailure,
+	                timeout : this.timeout,
+	                scope : this
+	           })
+       			
+	       		
+			    
+			    Phx.CP.loadingHide();
+	       	
+	       		}//end if si es factura	
+          	
+          },this);
+           
+          /*
            this.megrid.initialConfig.columns[5].editor.on('keyup',function(){ 
            	
            var devol = this.megrid.initialConfig.columns[5].editor.getValue() - this.megrid.initialConfig.columns[6].editor.getValue(); 
@@ -1252,9 +1348,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            this.megrid.initialConfig.columns[4].editor.setValue(total);
           	
           },this);
+          */
           
-          
-          this.megrid.initialConfig.columns[1].editor.on('keyup',function(){ 
+          /*this.megrid.initialConfig.columns[1].editor.on('keyup',function(){ 
            	
            		var total = this.megrid.initialConfig.columns[1].editor.getValue() * this.megrid.initialConfig.columns[3].editor.getValue(); 
            console.log(total);
@@ -1262,7 +1358,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            this.megrid.initialConfig.columns[4].editor.setValue(total);
           	
           },this);
-          
+          */
           
           
           
@@ -1858,14 +1954,14 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     	Phx.CP.loadingHide();		
         var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
         
-        console.log(objRes.ROOT.datos)
+        console.log(objRes.datos)
         //this.generarReportesApplet(objRes); 
         this.onReset();     
         
      
         Ext.Ajax.request({
 		        url:'../../sis_facturacion/control/Nota/generarNota',
-		        params:{'notas':objRes.ROOT.datos},
+		        params:{'notas':objRes.datos},
 		        success: this.successExport,
 		        failure: this.conexionFailure,
 		        timeout:this.timeout,
@@ -1907,7 +2003,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
         
         
         this.Cmp.liquidevolu.disable();  
-    	this.Cmp.boletos_id.disable();  
+    	//this.Cmp.boletos_id.disable();  
     	this.Cmp.id_factura.disable();  
     	this.megrid.disable();
 		//window.open(objRes.ROOT.datos);
@@ -1954,78 +2050,23 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     		
     		record = this.megrid.store.getAt(i);
     		
-    			
-    			
-    			if(this.Cmp.tipo_id.getValue() == 'FACTURA')
-    			{
-    				if(record.data.exento != undefined){
-    				//alert('fac');
-    				arra[i] = new Object();
-			        arra[i].id_factura_detalle = record.data.id_factura_detalle;
-			        arra[i].cantidad = record.data.cantidad;
-			        arra[i].precio_unitario = record.data.precio_unitario;
-			        arra[i].importe = record.data.importe;
-			        arra[i].exento = record.data.exento;
-			        
-			        }
-    		
-		        
-    			}
-    			if(this.Cmp.tipo_id.getValue() == 'LIQUIDACION')
-    			{
-    				//alert('liqui');
     				
-    				arra[i] = new Object();
-			        arra[i].nroliqui = record.data.nro_liqui;
-			        arra[i].concepto = record.data.concepto;
-			        arra[i].precio_unitario = record.data.precio_unitario;
-			        arra[i].importe_original = record.data.importe_original;
-			        arra[i].importe_devolver = record.data.importe_devolver;
-			        arra[i].exento = record.data.exento;
-			        arra[i].total_devuelto = record.data.total_devuelto;
-			        arra[i].nro_billete = record.data.nro_billete;
-			        arra[i].nro_nit = record.data.nro_nit;
-			        arra[i].razon = record.data.razon;
+			arra[i] = new Object();
+	        arra[i].nroliqui = record.data.nro_liqui;
+	        arra[i].concepto = record.data.concepto;
+	        arra[i].precio_unitario = record.data.precio_unitario;
+	        arra[i].importe_original = record.data.importe_original;
+	        arra[i].importe_devolver = record.data.importe_devolver;
+	        arra[i].exento = record.data.exento;
+	        arra[i].total_devuelto = record.data.total_devuelto;
+	        arra[i].nro_billete = record.data.nro_billete;
+	        arra[i].nro_nit = record.data.nro_nit;
+	        arra[i].razon = record.data.razon;
+	        
+	        arra[i].nrofac = record.data.nro_fac;
+	         arra[i].nroaut = record.data.nro_aut;
+	          arra[i].tipo = record.data.tipo;
 			       
-    			}
-    			
-    			if(this.Cmp.tipo_id.getValue() == 'BOLETO MANUAL')
-    			{
-    				//alert('liqui');
-    				
-    				arra[i] = new Object();
-			        arra[i].nroliqui = record.data.nro_liqui;
-			        arra[i].concepto = record.data.concepto;
-			        arra[i].precio_unitario = record.data.precio_unitario;
-			        arra[i].importe_original = record.data.importe_original;
-			        arra[i].importe_devolver = record.data.importe_devolver;
-			        arra[i].exento = record.data.exento;
-			        arra[i].total_devuelto = record.data.total_devuelto;
-			        arra[i].nro_billete = record.data.nro_billete;
-			        arra[i].nro_nit = record.data.nro_nit;
-			        arra[i].razon = record.data.razon;
-			       
-    			}
-    			
-    			
-    			if(this.Cmp.tipo_id.getValue() == 'FACTURA MANUAL')
-    			{
-    				//alert('liqui');
-    				
-    				arra[i] = new Object();
-			        arra[i].nroliqui = record.data.nro_liqui;
-			        arra[i].concepto = record.data.concepto;
-			        arra[i].precio_unitario = record.data.precio_unitario;
-			        arra[i].importe_original = record.data.importe_original;
-			        arra[i].importe_devolver = record.data.importe_devolver;
-			        arra[i].exento = record.data.exento;
-			        arra[i].total_devuelto = record.data.total_devuelto;
-			        arra[i].nro_billete = record.data.nro_billete;
-			        arra[i].nro_nit = record.data.nro_nit;
-			        arra[i].razon = record.data.razon;
-			       
-    			}
-    			
     			
 		        
     		
@@ -2058,8 +2099,8 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     	this.resetGroup(8);
     	//this.resetGroup(9);
     	//this.resetGroup(10);
-    	this.megrid.remove();
-		this.megrid.store.removeAll();
+    	//this.megrid.remove();
+		//this.megrid.store.removeAll();
      },
     
     

@@ -36,11 +36,29 @@ class ACTFacturaDetalle extends ACTbase{
 			
 			$this->objFunc=$this->create('MODLiquidevolu');
 			
-			$this->res=$this->objFunc->listarLiquitra($this->objParam);
+			$this->res=$this->objFunc->liquidevolu($this->objParam);
+			
+			
+			
+		}
+		
+		else if($this->objParam->getParametro('nrofac')!='' && $this->objParam->getParametro('nroaut')!=''){
+			
+			
+			
+			$this->objFunc=$this->create('MODLiquidevolu');
+			
+			$this->res=$this->objFunc->conceptosComputarizada($this->objParam);
+			
+			//$this->res->imprimirRespuesta($this->res->generarJson());
+			
+			
+			
 		}
 		
 		
 		$this->res->imprimirRespuesta($this->res->generarJson());
+		
 	}
 				
 	function insertarFacturaDetalle(){
