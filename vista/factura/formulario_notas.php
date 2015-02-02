@@ -103,7 +103,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 							'nroliqui','billcupon','razon','nit','exento',
 							'nrofac','nroaut','fecha_fac','precio_unitario',
 							'importe_devolver','total_devuelto','tipo','nro_billete',
-							'nro_fac','nro_aut'],
+							'nro_fac','nro_aut','nro_nit'],
 					remoteSort: true,
 					baseParams: {dir:'ASC',sort:'nroliqui',limit:'50',start:'0'}
 					
@@ -194,7 +194,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 						hideable: false,
                         editor: {
                             xtype: 'numberfield',
-                            allowBlank: false,
+                            allowBlank: true,
                             enable:false,
                             enableKeyEvents: true,
                         },
@@ -430,20 +430,42 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         
                         header: 'nro_nit',
                         dataIndex: 'nro_nit',
-                         hidden: true,
+                         hidden: false,
 						hideable: false,
                         width: 100,
-                        sortable: false
+                        sortable: false,
+                        editor:new Ext.form.TextField({
+
+						    enableKeyEvents: true,
+						   id:'nro_nit',
+						   name:'nro_nit',	
+						    allowBlank: true,
+						    
+						    
+						    
+						    
+						})
                         
                     },{
                         
                         header: 'razon',
                         dataIndex: 'razon',
                         
-                        hidden: true,
+                        hidden: false,
 						hideable: false,
                         width: 100,
-                        sortable: false
+                        sortable: false,
+                        editor:new Ext.form.TextField({
+
+						    enableKeyEvents: true,
+						    id:'razon',
+						   name:'razon',	
+						    allowBlank: true,
+						    
+						    
+						    
+						    
+						})
                         
                     }
             
@@ -690,32 +712,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            this.Cmp.tipo_id.on('select',function(rec){ 
     		
             if(this.Cmp.tipo_id.getValue() == 'FACTURA'){
-            	this.Cmp.id_factura.enable();  
-            	//this.Cmp.boletos_id.disable();  
-            	this.Cmp.liquidevolu.disable();
-            	
-            	//this.ocultarGrupo(9);
-            	//this.ocultarGrupo(10);
-            	
-            	
-            	this.resetear();
-            	
-            	this.Cmp.nro_factura.show();
-        		this.Cmp.autorizacion.show();
-        		this.Cmp.nit.show();
-        		this.Cmp.razon.show();
-        		this.Cmp.id_moneda.show();
-        		
-        		this.Cmp.pasajero.hide();
-        		this.Cmp.boleto.hide();
-        		this.Cmp.importe.hide();
-            	
-            	console.log(this.form.items.items[0].items.items[2].items.items[0].items.items[0]);
-            	
-            	//this.form.items.items[0].items.items[2].items.items[0].items.items[0].items.items[0].hide();
-            	
-            }
-            else if(this.Cmp.tipo_id.getValue() == 'FACTURA MANUAL'){
             	
             	console.log('llega')
             	//console.log(Ext.getCmp('input_pu'));
@@ -766,7 +762,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             	
             	
             }
-            else if(this.Cmp.tipo_id.getValue() == 'BOLETO MANUAL'){
+            else if(this.Cmp.tipo_id.getValue() == 'BOLETO'){
+            	
+            	
             	
             	
             	console.log(this.megrid);
@@ -1314,8 +1312,87 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			    Phx.CP.loadingHide();
 	       	
 	       		}//end if si es factura	
+	       		else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'CONCEPTO'){
+	       			
+	       			//relaciono su nit y razon dependiendo su nroaut y nrofac para que se llene automarico esos campos nuevos
+	       			var cantidad_registros = this.megrid.store.getCount();                
+		           for (var i = 0; i < cantidad_registros; i++) {
+	    		
+		    		record = this.megrid.store.getAt(i);
+					
+					
+					
+					if(record.data.nro_fac == this.megrid.initialConfig.columns[5].editor.getValue())
+					
+							if(record.data.nro_aut == this.megrid.initialConfig.columns[4].editor.getValue()){
+								this.megrid.initialConfig.columns[14].editor.setValue(record.data.nro_nit);
+								this.megrid.initialConfig.columns[15].editor.setValue(record.data.razon);
+							}
+					       
+		        
+	    			}
+	    			
+	    			
+		       			
+		       	}
           	
           },this);
+          
+          
+          
+          
+          //para cambiar el nit y razon de las columnas
+           this.megrid.initialConfig.columns[14].editor.on('blur',function(){
+     			
+     			var se = this.megrid.getSelectionModel().getSelections();
+	                       
+	                            
+	            var cantidad_registros = this.megrid.store.getCount();                
+	           for (var i = 0; i < cantidad_registros; i++) {
+    		
+	    		record = this.megrid.store.getAt(i);
+				
+				
+				if((record.data.nro_fac == se[0].data['nro_fac'])  && (record.data.nro_aut = se[0].data['nro_aut'])){
+					record.data.nro_nit = this.megrid.initialConfig.columns[14].editor.getValue();
+					record.data.razon = this.megrid.initialConfig.columns[15].editor.getValue();
+				}
+			
+				       
+	        
+    			}
+    			this.megrid.getView().refresh();
+    			console.log(this.megrid);
+     			
+           },this);
+           
+           
+           this.megrid.initialConfig.columns[15].editor.on('blur',function(){
+     		
+     			var se = this.megrid.getSelectionModel().getSelections();
+	                            console.log(se[0].data['nro_aut']);
+	                            console.log(se[0].data['nro_fac']);
+	                            
+	            var cantidad_registros = this.megrid.store.getCount();                
+	           for (var i = 0; i < cantidad_registros; i++) {
+    		
+	    		record = this.megrid.store.getAt(i);
+			
+				if((record.data.nro_fac == se[0].data['nro_fac'])  && (record.data.nro_aut = se[0].data['nro_aut'])){
+					record.data.nro_nit = this.megrid.initialConfig.columns[14].editor.getValue();
+					record.data.razon = this.megrid.initialConfig.columns[15].editor.getValue();
+				}
+			  
+	        
+    			}
+    			this.megrid.getView().refresh();
+    			console.log(this.megrid);
+     			
+           },this);
+           
+           
+           
+          
            
           /*
            this.megrid.initialConfig.columns[5].editor.on('keyup',function(){ 
@@ -1439,13 +1516,13 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             config:{
                 name: 'tipo_id',
                 fieldLabel: 'Tipo',
-                allowBlank: false,
+                allowBlank: true,
                 emptyText:'Tipo...',
                 typeAhead: true,
                 triggerAction: 'all',
                 lazyRender:true,
                 mode: 'local',
-                store:['FACTURA','LIQUIDACION','BOLETO MANUAL','FACTURA MANUAL'],
+                store:['FACTURA','LIQUIDACION','BOLETO'],
                 width:200 
             },
                 type:'ComboBox',
@@ -1663,7 +1740,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             config:{
                 fieldLabel: "Autorizacion",
                 name: 'autorizacion', 
-                allowBlank: false,               
+                allowBlank: true,               
                 maxLength:150,
                 width:200,
                 disabled:true                   
@@ -1679,7 +1756,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                 maxLength:150,
                 width:200 ,
                 disabled:true,
-                allowBlank:false             
+                allowBlank:true             
             },
             type:'NumberField',
             id_grupo: 6,
