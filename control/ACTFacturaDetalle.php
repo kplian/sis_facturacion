@@ -55,6 +55,17 @@ class ACTFacturaDetalle extends ACTbase{
 			
 			
 		}
+		/*else if($this->objParam->getParametro('pop')!=''){
+				
+			if($this->objParam->getParametro('billete')!=''){
+				
+				$this->objFunc=$this->create('MODLiquidevolu');
+				$this->res=$this->objFunc->listarBoletosExistente($this->objParam);
+			}
+			else if ($this->objParam->getParametro('factura')!='') {
+				
+			}
+		}*/
 		
 		
 		$this->res->imprimirRespuesta($this->res->generarJson());

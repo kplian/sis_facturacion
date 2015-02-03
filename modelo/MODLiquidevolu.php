@@ -241,6 +241,7 @@ class MODLiquidevolu extends MODbase{
 				                         bo.importe as importe_devolver,
 				                         bo.billete as nro_fac,
 				                         '1' as nro_aut,
+				                         
 				                         'BOLETO' as tipo
 				                          
 									from boletos bo
@@ -555,8 +556,8 @@ class MODLiquidevolu extends MODbase{
 					                         factu.razon,
 					                         factu.monto,
 					                         factu.exento,
-					                         factu.fecha as fecha_fac
-					                         
+					                         factu.fecha as fecha_fac,
+					                         'BOLETO' as tipo
 										from boletos bo
 										inner join facturas factu on factu.billete = bo.billete 
 										where bo.billete = '$billete' ";
