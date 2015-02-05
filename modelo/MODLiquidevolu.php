@@ -799,6 +799,7 @@ class MODLiquidevolu extends MODbase{
 						faco.pais,
 						faco.estacion,
 						faco.nroaut,
+						faco.nrofac,
 						faco.cantidad,
 						faco.preciounit as precio_unitario,
 						faco.importe as importe_original,

@@ -178,8 +178,7 @@ class MODNota extends MODbase{
 		
 		$items = json_decode($this->aParam->getParametro('newRecords'));
 		
-		
-		
+	
 		$nroliqui = $this->aParam->getParametro('liquidevolu');
 		$boleto = $this->aParam->getParametro('boleto');
 		$pasajero = $this->aParam->getParametro('pasajero');
