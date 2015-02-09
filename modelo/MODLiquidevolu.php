@@ -139,7 +139,7 @@ class MODLiquidevolu extends MODbase{
                          
                          FROM liquitra lite
                           left join facturas factu on factu.billete = lite.billcupon
-				        where lite.nroliqui = '$nroliqui'";
+				        where lite.nroliqui = '$nroliqui' and lite.idtramo = 'D'";
 				
 		$result = $informix->prepare($sql);
 						
@@ -163,7 +163,11 @@ class MODLiquidevolu extends MODbase{
 			
 		}
 		
-		$datos_del_boleto = $this->listarBoletos($fetch_result[0]['billcupon'],$concepto);
+		$listar_cupones_originales = $this->listarCuponesOriginales($fetch_result[0]['billcupon']);
+		
+	
+		//envia el billete el concepto con lo que se esta devolviendo y los conceptos originales
+		$datos_del_boleto = $this->listarBoletos($fetch_result[0]['billcupon'],$concepto,$listar_cupones_originales);
 		
 		if(trim($datos_del_boleto[0]['moneda']) != 'BOB'){
 					
@@ -212,9 +216,35 @@ class MODLiquidevolu extends MODbase{
 	
 	}
 	
+	function listarCuponesOriginales($billete){
+		$cone_in=new conexion();		
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql = "select * from cupon where billete = '$billete' and bill_cupon = '$billete'";
+			
+		$prepare = $informix->prepare($sql);
+		$prepare->execute();
+		
+		// obtengo los datos de razon social y nit
+		$resultado = $prepare->fetchAll(PDO::FETCH_ASSOC); 
+		
+		foreach ($resultado as $item) {
+			if($i == 0){
+				$billete .= "/".$item["origen"]."/".$item["destino"];
+			}else{
+				$billete .= "/".$item["destino"];
+			}
+			$i++;
+			
+		}
+		
+		return $billete;	
+	}
 	
 	
-	function listarBoletos($billete,$concepto){
+	function listarBoletos($billete,$concepto,$concepto_original){
 
 		$cone_in=new conexion();		
 		$informix=$cone_in->conectarPDOInformix();
@@ -236,6 +266,7 @@ class MODLiquidevolu extends MODbase{
 				                         factu.exento,
 				                         factu.fecha as fecha_fac,
 				                         '$concepto' as concepto,
+				                         '$concepto_original' as concepto_original,
 				                         bo.importe as precio_unitario,
 				                         bo.importe as total_devuelto,
 				                         bo.importe as importe_devolver,
@@ -509,13 +540,14 @@ class MODLiquidevolu extends MODbase{
 	}
 
 
-
+	
 	function listarBoletosExistente(){
 		
 	
 		
 		$cone=new conexion();		
 		$link=$cone->conectarPDOInformix();
+		
 		
 		
 		if($this->datosNoPermitidosBoleto()){
@@ -542,6 +574,9 @@ class MODLiquidevolu extends MODbase{
 				
 				if($results2[0]['COUNT'] == 0){
 					
+					$concepto_original = $this->listarCuponesOriginales($billete);
+					
+					
 					$sql_facturas = "select bo.billete,
 					                        bo.fecha,
 					                        bo.tcambio,
@@ -557,7 +592,8 @@ class MODLiquidevolu extends MODbase{
 					                         factu.monto,
 					                         factu.exento,
 					                         factu.fecha as fecha_fac,
-					                         'BOLETO' as tipo
+					                         'BOLETO' as tipo,
+					                         '$concepto_original' as concepto_original
 										from boletos bo
 										inner join facturas factu on factu.billete = bo.billete 
 										where bo.billete = '$billete' ";
@@ -582,6 +618,12 @@ class MODLiquidevolu extends MODbase{
 					
 					
 				}
+			}else{
+				$this->respuesta=new Mensaje();
+					
+				$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+				$this->respuesta->setTotal(1);
+				$this->respuesta->setDatos("PERTENECE A UNA LIQUIDACION");
 			}
 			
 		}else{
@@ -606,8 +648,8 @@ class MODLiquidevolu extends MODbase{
 		$billete = $this->aParam->getParametro('billete');
 		
 		
-		
 		$resp = TRUE;
+		
 		
 		foreach ($datos_no_permitidos as $item) {
 			
@@ -707,6 +749,26 @@ class MODLiquidevolu extends MODbase{
 			
 		}
 		
+		$i = 0;
+		
+		foreach ($conceptos as $item) {
+			
+			
+			if($item['moneda'] != 'BOB'){
+				
+				$conversion = $this->monedaConvercion($item['moneda'],$item['precio_original'],$item['pais'],$item['fecha']);
+				
+				$conversion[$i]['importe_original'] = "$conversion";
+				$conversion[$i]['precio_unitario'] = "$conversion";
+				
+			
+			}
+			
+			$i++;
+		}
+		
+		
+		
 		
 				
 		$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
@@ -741,13 +803,15 @@ class MODLiquidevolu extends MODbase{
 		
 		$nrofac = $this->aParam->getParametro('nrofac');
 		$nroaut = $this->aParam->getParametro('nroaut');
+		
 		$cone_in=new conexion();	
 		$informix=$cone_in->conectarPDOInformix();
 		
 		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
 		
 		$sql_fac = " SELECT  COUNT(*) as count from factucom where nrofac = '$nrofac' and nroaut = '$nroaut'";
-									
+		
+								
 		$prepare_fac = $informix->prepare($sql_fac);
 		$prepare_fac->execute();
 		
@@ -804,7 +868,10 @@ class MODLiquidevolu extends MODbase{
 						faco.preciounit as precio_unitario,
 						faco.importe as importe_original,
 						fac.razon,
-						fac.nit
+						fac.nit,
+						fac.moneda,
+						fac.tcambio,
+						fac.fecha
 						 from factucomcon faco
 						 inner join concefaccom con on con.tipocon = faco.tipocon
 						 inner join factucom fac on fac.nroaut = faco.nroaut
@@ -905,6 +972,8 @@ class MODLiquidevolu extends MODbase{
 		
 		$nrofac = $this->aParam->getParametro('nrofac');
 		$nroaut = $this->aParam->getParametro('nroaut');
+		
+		
 		$cone_in=new conexion();	
 		$informix=$cone_in->conectarPDOInformix();
 		
@@ -920,7 +989,10 @@ class MODLiquidevolu extends MODbase{
 					fac.monto as importe_original,
 					fac.monto,
 					fac.nrofac,
-					fac.nroaut
+					fac.nroaut,
+					fac.moneda,
+					fac.tcambio,
+					fac.fecha
 					 from factumancon faco
 					 inner join concefac con on con.tipocon = faco.tipdoc
 					 inner join factuman fac on fac.nroaut = faco.nroaut
@@ -944,6 +1016,8 @@ class MODLiquidevolu extends MODbase{
 		
 		$nrofac = $this->aParam->getParametro('nrofac');
 		$nroaut = $this->aParam->getParametro('nroaut');
+		
+		
 		$cone_in=new conexion();	
 		$informix=$cone_in->conectarPDOInformix();
 		
@@ -981,7 +1055,10 @@ class MODLiquidevolu extends MODbase{
 					fac.monto as importe_original,
 					fac.monto,
 					fac.nrofac,
-					fac.nroaut
+					fac.nroaut,
+					fac.moneda,
+					fac.tcambio,
+					fac.fecha
 					 from factumancon faco
 					 inner join concefac con on con.tipocon = faco.tipdoc
 					 inner join facturas fac on fac.nroaut = faco.nroaut
@@ -999,6 +1076,97 @@ class MODLiquidevolu extends MODbase{
 		return $resultado_fac;
 		
 	}
+	
+	function listarBoletosConTramos($boleto){
+		
+		
+		$listar_cupones_originales = $this->listarCuponesOriginales($boleto);
+		$datos_del_boleto = $this->listarBoletos($boleto,$listar_cupones_originales,$listar_cupones_originales);
+		return $datos_del_boleto;
+	}
+	
+	function listarFacturaConceptosOriginales(){
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nrofac = $this->aParam->getParametro('nroaut');
+		
+	
+		if($this->siExisteComputarizada()){//facturas computarizadas
+			//echo "existe";
+			$tipo_de_factura = $this->facturaComputarizada();
+			$conceptos = $this->conceptosComputarizada();
+			
+			
+		}elseif($this->siExisteManual()){//facturas manuales
+			
+			$monto = 0;
+			$tipo_de_factura = $this->facturaManual();
+			$conceptos = $this->ConceptosManual();
+			
+			$monto = $monto + $manual[0]['monto'];
+			
+			if($this->siExisteFacturas()){
+				
+				$facturas = $this->facturaFacturas();
+				$monto = $monto + $facturas[0]['monto'];
+				$tipo_de_factura[0]['razon'] = $facturas[0]['razon'];
+				$tipo_de_factura[0]['nit'] = $facturas[0]['nit'];
+				
+				foreach ($conceptos as $item) {
+					$conceptos[0]['razon'] = $facturas[0]['razon'];
+					$conceptos[0]['nit'] = $facturas[0]['nit'];
+				}
+				
+				
+			}
+			
+			
+			
+		}elseif($this->siExisteManual() == false){ //facturas de la tabla facturas
+			
+			
+			if($this->siExisteFacturas()){
+				
+				$tipo_de_factura = $this->facturaFacturas();
+				$conceptos = $this->ConceptosFacturas();
+				
+			}
+			
+			
+			
+			
+		}
+		
+		$i = 0;
+		
+		foreach ($conceptos as $item) {
+			
+			
+			
+			if($item['moneda'] != 'BOB'){
+				
+				$conversion = $this->monedaConvercion($item['moneda'],$item['precio_original'],$item['pais'],$item['fecha']);
+				
+				$conversion[$i]['importe_original'] = "$conversion";
+				$conversion[$i]['precio_unitario'] = "$conversion";
+				
+			
+			}
+			
+			$i++;
+		}
+		
+		
+		return $conceptos;
+		
+	
+		
+	}
+	
+	
+	
+	
+	
 			
 	
 			

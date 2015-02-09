@@ -412,6 +412,7 @@ class MODNota extends MODbase{
 		$informix=$cone_in->conectarPDOInformix();
 		
 		$items = json_decode($this->aParam->getParametro('newRecords'));
+		//$liquidevolu = $this->aParam->getParametro('liquidevolu');
 		
 		
 		
@@ -438,6 +439,9 @@ class MODNota extends MODbase{
 						
 						//se crea una nota para esta fila de datos por que no existe en la base de datos
 						$temp[] = $this->guardarNotaFactura($item);
+						$nota = $this->verDatosDeNota($item->nrofac,$item->nroaut);
+						$this->insertarNotaDetalle($item, $nota); //mandamos la fila y el id_nota
+						
 						
 					}else{
 						
@@ -545,6 +549,7 @@ class MODNota extends MODbase{
 			
 		$dosi_result = $dosi->fetchAll(PDO::FETCH_ASSOC);
 		
+		
 		return $dosi_result;
 		
 	}
@@ -582,6 +587,7 @@ class MODNota extends MODbase{
 		$link = $cone->conectarpdo();
 		
 		$credfis = $item->total_devuelto * 0.13;
+		$id_dosi =$dosificacion[0]['id_dosificacion'];
 			
 		$stmt = $link->prepare("INSERT INTO fac.tnota
 										(
@@ -631,7 +637,7 @@ class MODNota extends MODbase{
 										  '1',
 										  'estado',
 										  1,
-										  '".$dosi_result[0]['nro_siguiente']."',
+										  '".$dosificacion[0]['nro_siguiente']."',
 										   now(),
 										  '". $item->razon ."',
 										  '6.9',
@@ -680,15 +686,19 @@ class MODNota extends MODbase{
 				  id_nota,
 				  importe,
 				  cantidad,
-				  concepto
+				  concepto,
+				  exento,
+				  total_devuelto
 				) 
 				VALUES (
 				  ". $_SESSION['ss_id_usuario'] .",
 				  'activo',
 				  '".$id_nota."',
-				  '". $item->total_devuelto ."',
+				  '". $item->importe_devolver ."',
 				  1,
-				   '".$item->concepto."'
+				   '".$item->concepto."',
+				   '". $item->exento ."',
+				   '". $item->total_devuelto ."'
 				);");
 				
 								
@@ -738,7 +748,7 @@ class MODNota extends MODbase{
 		$link=$cone->conectarpdo();
 		
 		
-		$items_notas = $this->aParam->getParametro('notas');
+		$items_notas = $this->aParam->getParametro('notas'); //llega los id notas
 		
 		
 		$cadena_aux = "";
@@ -808,6 +818,8 @@ class MODNota extends MODbase{
 										  nota.billete,
 										  nota.codigo_control,
 										  nota.id_dosificacion,
+										  nota.nrofac as factura,
+										  nota.nroaut as autorizacion,
 										  dosi.nroaut,
 										  to_char(dosi.fecha_limite,'DD-MM-YYYY') AS fecha_limite
 										FROM 

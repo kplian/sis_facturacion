@@ -73,6 +73,8 @@ class ACTNota extends ACTbase{
 		
 		$notas = $this->res->getDatos();
 		
+		
+		
 		$html = "";
 		$i = 0;
 		
@@ -91,6 +93,24 @@ class ACTNota extends ACTbase{
 			
 			$this->objParam->parametros_consulta['filtro'] = ' 0 = 0 ';
 			$this->objParam->addFiltro("deno.id_nota = ". $item['id_nota']);
+			
+			//obtenemos conceptos originales de esta factura o boleto
+			
+			if($item['autorizacion'] == 1){ //esta autorizacion es de la nota ya sea de factura o boleto
+				
+				
+				$original = $this->listarBoletosOriginales($item['factura']);
+				
+			}else{
+				
+				$original = $this->listarFacturaOriginales($item['factura'],$item['autorizacion']);
+				
+				
+				
+			}
+			
+						
+			//listamos detalle de la nota
 			$this->objFunc2=$this->create('MODNotaDetalle');	
 			$this->res2=$this->objFunc2->listarNotaDetalle($this->objParam);
 			
@@ -101,6 +121,7 @@ class ACTNota extends ACTbase{
 			}
 			
 			$detalles = $this->res2->getDatos();
+			
 			
 			
 			setlocale(LC_ALL,"es_ES@euro","es_ES","esp");
@@ -219,8 +240,8 @@ class ACTNota extends ACTbase{
 					        <tr>
 					            <td align="left">N.Factura:</td>
 					            <td align="left">'.$item['nro_nota'].'</td>
-					            <td>&nbsp;</td>
-					            <td>&nbsp;</td>
+					            <td></td>
+					            <td></td>
 					        </tr>
 					
 					        <tr>
@@ -236,9 +257,13 @@ class ACTNota extends ACTbase{
 					            <td>&nbsp;</td>
 					        </tr>
 					
-					        <tr>
-					            <td colspan="4" class="line"></td>
-					        </tr>
+					        
+					        
+							</table>
+					
+					    <hr class="line" />
+					
+					    <table width="100%" border="0">
 					
 					        <tr>
 					            <td>CANT</td>
@@ -248,19 +273,28 @@ class ACTNota extends ACTbase{
 					        </tr>
 					        <tr>
 					            <td colspan="4" class="line"></td>
-					        </tr>
-					        <tr>
+					        </tr>';
+							$total_original = 0;
+							
+					         foreach ($original as $item_detalle) {
+						$html.='<tr>
 					            <td>1</td>
-					            <td>'.$item['billete'].'</td>
-					            <td>'.number_format($item['monto_total'], 2, '.', '').'</td>
-					            <td>'.number_format($item['monto_total'], 2, '.', '').'</td>
-					        </tr>
-					        <tr>
+					            <td>'.$item_detalle['concepto'].'</td>
+					            <td>'.number_format($item_detalle['importe_original'], 2, '.', '').'</td>
+					            <td>'.number_format($item_detalle['importe_original'], 2, '.', '').'</td>
+					        </tr>';
+							$total_original = $total_original + $item_detalle['monto'];
+					        }
+
+
+					
+					      
+	        	    $html.= '<tr>
 					            <td colspan="4" class="line"></td>
 					        </tr>
 					        <tr>
 					            <td colspan="2" align="right">Total General:</td>
-					            <td colspan="2" align="center">'.number_format($item['monto_total'], 2, '.', '').'</td>
+					            <td colspan="2" align="center">'.number_format($total_original, 2, '.', '').'</td>
 					        </tr>
 					    </table>
 					
@@ -280,21 +314,28 @@ class ACTNota extends ACTbase{
 					        <tr>
 					            <td>CANT</td>
 					            <td>CONCEPTO</td>
-					            <td>P.U</td>
+					            <td>P/UNIT</td>
 					            <td>IMPORTE</td>
+					            
 					        </tr>
 					        <tr>
 					            <td colspan="4" class="line"></td>
 					        </tr>';
-					      
+					      $exento_total = 0;
+						  $importe_total = 0;
 						   foreach ($detalles as $item_detalle) {
+						   	
+						   	$exento_total = $exento_total + $item_detalle['exento'];
+							$importe_total = $importe_total + $item_detalle['importe'];
+							
 						$html.='<tr>
 								<td>1</td>
 					            <td>'.$item_detalle['concepto'].'</td>
-					            <td>'.number_format($item['monto_total'], 2, '.', '').'</td>
-					            <td>'.number_format($item['monto_total'], 2, '.', '').'</td>
+					            <td>'.number_format($item_detalle['importe'], 2, '.', '').'</td>
+					            <td>'.number_format($item_detalle['importe'], 2, '.', '').'</td>
 					        </tr>';
 					        }
+							$total_devolver = $importe_total - $exento_total;
 					
 					       $html.= '<tr>
 					            <td colspan="4" class="line"></td>
@@ -302,15 +343,15 @@ class ACTNota extends ACTbase{
 					
 					        <tr>
 					            <td colspan="2" align="right">Total:</td>
-					            <td colspan="2" align="center">'.number_format($item['monto_total'], 2, '.', '').'</td>
+					            <td colspan="2" align="center">'.number_format($importe_total, 2, '.', '').'</td>
 					        </tr>
 					        <tr>
 					            <td colspan="2" align="right">Menos: Importes Exentos Bs:</td>
-					            <td colspan="2" align="center">'.number_format($item['excento'], 2, '.', '').'</td>
+					            <td colspan="2" align="center">'.number_format($exento_total, 2, '.', '').'</td>
 					        </tr>
 					        <tr>
 					            <td colspan="2" align="right">Importe Total Devuelto</td>
-					            <td colspan="2" align="center">'.(number_format($item['monto_total'], 2, '.', '') - number_format($item['excento'], 2, '.', '')).'</td>
+					            <td colspan="2" align="center">'.number_format($total_devolver, 2, '.', '').'</td>
 					        </tr>
 					    </table>
 					
@@ -374,8 +415,32 @@ class ACTNota extends ACTbase{
 		$this->res->imprimirRespuesta($this->res->generarJson());		
 		
 	}
+
+	function listarBoletosOriginales($billete){
+		
+		
+	
+		$this->objFunc=$this->create('MODLiquidevolu');	
+		$ori =$this->objFunc->listarBoletosConTramos($billete);
+		
+		return $ori;
+	}
+	
+	function listarFacturaOriginales($factura,$autorizacion){
+		
+		
+		$this->objParam->addParametro('nrofac',$factura);
+		$this->objParam->addParametro('nroaut',$autorizacion);
+		
+		
+		$this->objFunc2=$this->create('MODLiquidevolu');	
+		$ori =$this->objFunc2->listarFacturaConceptosOriginales($this->objParam);
+		return $ori;
+	}
 	
 	function crearReporteNotas(){
+		
+		
 		
 	}
 			

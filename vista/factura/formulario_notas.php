@@ -54,12 +54,33 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 				    enableTabScroll:true,
 				    listeners: {
 				    	scope: this,
+				    	
 					    tabchange: function()  {
+					    	
+					    	
 					       //console.log()
 					      if(this.tabs.activeTab != undefined){
 					      	var nrofac = this.tabs.activeTab.id
 					       this.megrid.store.filter("nro_fac",nrofac);
+					       
+						      if(this.tabs.activeTab.name == 1){ // se fija si es boleto para bloquear agregar concepto
+						      	this.megrid.addCon.disabled = true;
+						      	this.megrid.removeBtn.disabled = true;
+						      	
+						      }else{
+						      	this.megrid.addCon.disabled = false;
+						      	this.megrid.removeBtn.disabled = false;
+						      }
+						      
+					      
 					      }
+					      
+					     
+					      
+					    
+					      
+					     
+	                       
 
 					     
 					    },
@@ -67,7 +88,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					    	
 					    	console.log(b.id)
 					    	
-					    	console.log(this.megrid);
+					    	
 	                       this.megrid.store.filter("nro_fac",b.id);
 	                       
 	                      
@@ -86,6 +107,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					      	var nrofac = this.tabs.activeTab.id
 					       this.megrid.store.filter("nro_fac",nrofac);
 					      }
+					      
+					      
+					      
 	                       
 	                      
 	                       
@@ -234,7 +258,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 							'nroliqui','billcupon','razon','nit','exento',
 							'nrofac','nroaut','fecha_fac','precio_unitario',
 							'importe_devolver','total_devuelto','tipo','nro_billete',
-							'nro_fac','nro_aut','nro_nit'],
+							'nro_fac','nro_aut','nro_nit','concepto_original'],
 					remoteSort: true,
 					baseParams: {dir:'ASC',sort:'nroliqui',limit:'50',start:'0'}
 					
@@ -280,6 +304,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                    
                     tbar: [{
                         /*iconCls: 'badd',*/
+                        ref: '../addCon',
                         text: '<i class="fa fa-plus-circle fa-lg"></i> Agregar',
                         scope:this,
                         width: '100',
@@ -356,7 +381,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			                triggerAction: 'all',
 			                lazyRender:true,
 			                mode: 'local',
-			                store:['FACTURA','BOLETO','CONCEPTO'],
+			                store:[/*'FACTURA','BOLETO',*/'FACTURA'],
 			                width:200 ,
 			                enableKeyEvents: true,
 				            
@@ -392,7 +417,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         header: 'nro_aut',
                         dataIndex: 'nro_aut',
                         
-                        hidden: true,
+                        hidden: false,
 						hideable: false,
                         width: 100,
                         sortable: false,
@@ -413,7 +438,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                         header: 'nro_fac',
                         dataIndex: 'nro_fac',
                         
-                        hidden: true,
+                        hidden: false,
 						hideable: false,
                         width: 100,
                         sortable: false,
@@ -611,7 +636,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
         this.borderForm = true;
         
         this.frameForm = false; 
-        this.paddingForm = '5 40 5 0';
+        this.paddingForm = '0 0 5 0';
         this.bodyStyle ='padding:0px 5px 0',
         this.Grupos = [
             {
@@ -959,14 +984,14 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            
            	this.megrid.store.load({params:{start:0,limit:20}, 
 		       callback : function (r) {	       				
-		    		console.log(r[0].data['billcupon']); 
 		    		var concepto = r[0].data['billcupon'];
 		    		var importe_original = r[0].data['importe_original'];
 		    		var billete = r[0].data['nro_billete'];
+		    		var concepto_original = r[0].data['concepto_original'];
 		        	
 		        	//aca va la agregacion del los datos originales
 		        	
-		        	this.tabsBoleto(concepto,importe_original,billete);
+		        	this.tabsBoleto(concepto_original,importe_original,billete);
 		        	
 		        	//termina agregacion de los datos originales
 		        	
@@ -984,26 +1009,24 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            
            
            
-          this.megrid.initialConfig.columns[3].editor.on('keyup',function(){   
-          	
-          	if(this.megrid.initialConfig.columns[2].editor.getValue() == 'BOLETO'){
-          		
-          	if(this.megrid.initialConfig.columns[3].editor.getValue().length == 13 && this.Cmp.tipo_id.getValue() != 'FACTURA MANUAL' )
-       		{
-       			
-       			
-	         //fin ajax 2
-       			
-       			
-       		}
-       		}
-          	
+          this.megrid.initialConfig.columns[3].editor.on('blur',function(){   
+          	//aca
+          	var nroaut = this.tabs.activeTab.name;
+          	var nrofac = this.tabs.activeTab.id;
+          	 this.megrid.initialConfig.columns[4].editor.setValue(nroaut);
+          	 this.megrid.initialConfig.columns[5].editor.setValue(nrofac);
+          	 
+          	 
+          	 this.megrid.store.data.each( function(rec){
+	           this.megrid.initialConfig.columns[14].editor.setValue(rec.data.nro_nit) ;         	 
+	           this.megrid.initialConfig.columns[15].editor.setValue(rec.data.razon)  ;          	
+          	}, this )
+          
           },this);
           
           
            this.megrid.initialConfig.columns[2].editor.on('select',function(){ 
            	
-        	 console.log('llega');
         	 
         	 if(this.megrid.initialConfig.columns[2].editor.getValue() == 'BOLETO'){
         	 	
@@ -1025,21 +1048,21 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             	
         	 }else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'FACTURA'){
         	 	
-        	 	Ext.getCmp('input_concepto').addClass('x-item-disabled');
-            	Ext.getCmp('input_concepto').disable(true);	
+        	 	Ext.getCmp('input_fac').addClass('x-item-disabled');
+            	Ext.getCmp('input_fac').disable(true);
+            	
+            	Ext.getCmp('input_aut').addClass('x-item-disabled');
+            	Ext.getCmp('input_aut').disable(true);	
         	 	
-        	 	Ext.getCmp('input_fac').removeClass('x-item-disabled');
-        	 	Ext.getCmp('input_fac').enable(true);
-        	 	
-        	 	Ext.getCmp('input_aut').removeClass('x-item-disabled');
-        	 	Ext.getCmp('input_aut').enable(true);
-        	 	
-        	 	
+        	 	Ext.getCmp('input_concepto').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_concepto').enable(true);
         	 	
         	 	
         	 	
         	 	
-        	 }else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'CONCEPTO'){
+        	 	
+        	 }
+        	 /*else if(this.megrid.initialConfig.columns[2].editor.getValue() == 'CONCEPTO'){
         	 	
         	 	
         	 	Ext.getCmp('input_fac').removeClass('x-item-disabled');
@@ -1050,7 +1073,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
         	 	
         	 	Ext.getCmp('input_concepto').removeClass('x-item-disabled');
         	 	Ext.getCmp('input_concepto').enable(true);
-        	 }
+        	 }*/
            
            },this);
            
@@ -1120,7 +1143,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	        
     			}
     			this.megrid.getView().refresh();
-    			console.log(this.megrid);
      			
            },this);
            
@@ -1128,8 +1150,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            this.megrid.initialConfig.columns[15].editor.on('blur',function(){
      		
      			var se = this.megrid.getSelectionModel().getSelections();
-	                            console.log(se[0].data['nro_aut']);
-	                            console.log(se[0].data['nro_fac']);
+	                        
 	                            
 	            var cantidad_registros = this.megrid.store.getCount();                
 	           for (var i = 0; i < cantidad_registros; i++) {
@@ -1144,7 +1165,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	        
     			}
     			this.megrid.getView().refresh();
-    			console.log(this.megrid);
      			
            },this);
            
@@ -1161,7 +1181,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            this.megrid.initialConfig.columns[9].editor.on('keyup',function(){ 
            	
            var devol = this.megrid.initialConfig.columns[9].editor.getValue() - this.megrid.initialConfig.columns[10].editor.getValue(); 
-           console.log(devol);
           
 	       this.megrid.initialConfig.columns[11].editor.setValue(devol);
 	                         
@@ -1172,9 +1191,32 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
           this.megrid.initialConfig.columns[10].editor.on('keyup',function(){ 
            	
            	var devol = this.megrid.initialConfig.columns[9].editor.getValue() - this.megrid.initialConfig.columns[10].editor.getValue(); 
-           console.log(devol);
           
 	       this.megrid.initialConfig.columns[11].editor.setValue(devol);
+          },this);
+          
+          
+          
+          
+          this.win_pop.items.items[0].form.items.items[0].on('select',function(){
+          	
+          	if(this.win_pop.items.items[0].form.items.items[0].getValue() == 'BOLETO'){
+          		
+          		this.win_pop.items.items[0].form.items.items[1].setValue('1');
+          		this.win_pop.items.items[0].form.items.items[2].setValue('');
+          		this.win_pop.items.items[0].form.items.items[1].disable();
+          		
+          		
+          		
+          	}else{
+          		
+          		this.win_pop.items.items[0].form.items.items[1].setValue('');
+          		this.win_pop.items.items[0].form.items.items[2].setValue('');
+          		this.win_pop.items.items[0].form.items.items[1].enable();
+          		
+          	}
+          	
+			          	
           },this);
           
           
@@ -1216,9 +1258,16 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     
     loadValoresIniciales:function()
     { 
-    	console.log(this.megrid);
     	
-    	 
+    	 		Ext.getCmp('input_fac').addClass('x-item-disabled');
+            	Ext.getCmp('input_fac').disable(true);
+            	
+            	Ext.getCmp('input_aut').addClass('x-item-disabled');
+            	Ext.getCmp('input_aut').disable(true);	
+        	 	
+        	 	Ext.getCmp('input_concepto').removeClass('x-item-disabled');
+        	 	Ext.getCmp('input_concepto').enable(true);
+        	 	
     },
     
 
@@ -1480,7 +1529,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     	Phx.CP.loadingHide();		
         var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
         
-        console.log(objRes.datos)
         //this.generarReportesApplet(objRes); 
         this.onReset();     
         
@@ -1522,7 +1570,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			doc.open();
 			doc.write(texto);
 			doc.close();
-	        console.log(ifrm);
 	        i++;
         
         });
@@ -1571,8 +1618,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     	
     	this.win.hide();
     	this.megrid.store.filter();
-    	console.log(this.mestore);
-    	console.log(this.megrid.store)
+    	
     	var cantidad_registros = this.megrid.store.getCount();
     	var record;
     	
@@ -1585,7 +1631,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
     		
     				
 			arra[i] = new Object();
-	        arra[i].nroliqui = record.data.nro_liqui;
+	        arra[i].nroliqui = this.Cmp.liquidevolu.getValue();
 	        arra[i].concepto = record.data.concepto;
 	        arra[i].precio_unitario = record.data.precio_unitario;
 	        arra[i].importe_original = record.data.importe_original;
@@ -1631,7 +1677,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 				        
         }
         else{
-        	console.log('factura')
         	this.megrid.store.baseParams.factura = this.win_pop.items.items[0].form.items.items[2].getValue() ; 
         	var arra = this.datosPermitidosFactura();
 		    this.ajaxFactura(this.win_pop.items.items[0].form.items.items[2].getValue(), this.win_pop.items.items[0].form.items.items[1].getValue(),arra);
@@ -1721,7 +1766,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
      },
      datosPermitidosBoletos:function(){
      	
-     	console.log(this)
      	var cantidad_registros = this.megrid.store.getCount();
     	var record;
     	
@@ -1762,7 +1806,8 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	                	var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
 	                	
 	                	if(reg.datos == "DUPLICADO"){
-	                		alert("datos duplicados en la vista intente con otra factura");
+	                		this.mensaje_('DUPLICIDAD','Lo requerido ya se encuentra en vista','ERROR');
+				                			 
 	                	}
 	                	if(reg.datos){
 	                		
@@ -1877,7 +1922,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 								}				    
 												    
 								var se = this.megrid.getSelectionModel().getSelections();
-	                            console.log(se);
 	                            
 	                            /*for(var i = 0, r; r = se[i]; i++){
 	                            	
@@ -1896,7 +1940,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	           })
      },
      ajaxBoletos:function(billete,arra){
-     	console.log('llega ajax boletos');
      	 Ext.Ajax.request({
 				         	
 			         		
@@ -1917,6 +1960,13 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			                			
 			                			//editor.stopEditing();
 			                			
+			                			if(reg_new.datos == "PERTENECE A UNA LIQUIDACION"){
+			                				
+			                				this.mensaje_('Error','El numero de billete pertenece a una liquidacion','ERROR');
+
+			                				
+			                			}else{
+			                				
 			                			
 			                		
 			                		
@@ -1978,7 +2028,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					                                cantidad:1,
 					                                tipo:'BOLETO',
 					                                
-					                                concepto:reg_new.datos[0].BILLETE,
+					                                concepto:reg_new.datos[0].CONCEPTO_ORIGINAL,
 					                                precio_unitario:reg_new.datos[0].MONTO,
 					                                importe_original:reg_new.datos[0].MONTO,
 					                                importe_devolver:reg_new.datos[0].MONTO,
@@ -1994,11 +2044,10 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					                            });					
 					    				
 	
-										this.tabsBoleto(reg_new.datos[0].BILLETE,reg_new.datos[0].MONTO,reg_new.datos[0].BILLETE);
+										this.tabsBoleto(reg_new.datos[0].CONCEPTO_ORIGINAL,reg_new.datos[0].MONTO,reg_new.datos[0].BILLETE);
 										this.agregarDatosCampo(reg_new.datos[0].BILLETE,reg_new.datos[0].RAZON,reg_new.datos[0].NIT,reg_new.datos[0].FECHA_FAC,reg_new.datos[0].MONTO,reg_new.datos[0].NROAUT);				    
 														    
 										var se = this.megrid.getSelectionModel().getSelections();
-			                            console.log(se);
 			                            				 
 									    this.mestore.insert(0, es);
 		                    			this.megrid.getView().refresh();
@@ -2011,8 +2060,12 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			                            }*/
 			                	
 				                		}else{
-				                			alert("Billete Duplicado en la vista");
+				                			
+				                			this.mensaje_('DUPLICIDAD','Lo requerido ya se encuentra en vista','ERROR');
+
 				                		}
+				                		
+				                		}//fin pertenece
 			                		       		  	               
 						            } else {		                
 						                alert('Ocurrio un error al obtener el billete de esta liquidacion')
@@ -2136,6 +2189,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 		            title: '<i class="fa fa-file"></i> DATOS DE LA TRANSACCION : '+countData[0].nrofac,
 		            //iconCls: 'tabs',
 		            id:countData[0].nrofac,
+		             name:countData[0].nroaut,
 		            html: m ,
 		            closable:true
 		        	}).show();
@@ -2146,7 +2200,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
      
      tabsBoleto:function(concepto,importe_original,billete){
      	
-     	console.log('billete'+billete)
      	var m = '';
 		    		m +='<table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">';
 					m +='<thead>';
@@ -2249,6 +2302,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 		            title: '<i class="fa fa-ticket"></i> DATOS DE LA TRANSACCION Original: '+billete,
 		            //iconCls: 'tabs',
 		            id:billete,
+		            name:1,
 		            html: m ,
 		            closable:true
 		        	}).show();
@@ -2260,6 +2314,33 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
      	this.tabs.removeAll();
 	 	this.megrid.remove();
 		this.megrid.store.removeAll();
+     },
+     
+     
+     mensaje_ : function(titulo,mensaje,icono){
+     	
+     
+     	var tipo = '';
+     	switch (icono) {
+			    case 'ERROR':
+			        tipo = 'ext-mb-error';
+			        break;
+			    
+			    case 'PELIGRO':
+			        tipo = 'ext-mb-warning';
+			        break;
+			    case 'INFO' :
+			        tipo = 'ext-mb-info';
+			        break;
+			}
+
+     	Ext.MessageBox.show({
+            title: titulo,
+            msg: mensaje,
+            buttons: Ext.MessageBox.OK,
+            icon:tipo
+        })
+				                                
      }
     
     

@@ -36,9 +36,16 @@ class MODNotaDetalle extends MODbase{
 		$this->captura('id_usuario_mod','int4');
 		$this->captura('fecha_mod','timestamp');
 		$this->captura('cantidad','int4');
+		
 		$this->captura('concepto','varchar');
+		
+		$this->captura('exento','numeric');
+		$this->captura('total_devuelto','numeric');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
+		
+		
+
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
