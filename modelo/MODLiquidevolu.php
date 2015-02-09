@@ -51,7 +51,7 @@ class MODLiquidevolu extends MODbase{
 		$cone_in=new conexion();		
 		$informix=$cone_in->conectarPDOInformix();
 		
-		$sql = "select doc.iddoc from liquidoc doc
+		$sql = "select doc.nroaut,doc.nrofac,doc.iddoc from liquidoc doc
 				where doc.nroliqui = '$nroliqui'";
 				
 		$result = $informix->prepare($sql);
@@ -61,7 +61,8 @@ class MODLiquidevolu extends MODbase{
 			
 		$dosi_result = $result->fetchAll(PDO::FETCH_ASSOC);
 		
-		return trim($dosi_result[0]['IDDOC']);
+	
+		return $dosi_result;
 		
 				
 				
@@ -74,23 +75,31 @@ class MODLiquidevolu extends MODbase{
 		
 		$nroliqui = $this->aParam->getParametro('nroliqui');
 		
-		$tipo_de_documento = $this->verTipoDevolucion($nroliqui);
+		$documento = $this->verTipoDevolucion($nroliqui);
 		
-		if($tipo_de_documento == 'BOL'){//CUANDO EL DOCUMENTO SEA BOLETO
+		
+		
+		if(trim($documento[0]['IDDOC']) == 'BOL'){//CUANDO EL DOCUMENTO SEA BOLETO
 		
 			$datos = $this->liquiboletramos($nroliqui);
 			
 			
 			
-		}elseif($tipo_de_documento == 'FACCOM'){//DOCUMENTO FACTURA COMPOTARIZADA
+		}elseif(trim($documento[0]['IDDOC']) == 'FACCOM'){//DOCUMENTO FACTURA COMPOTARIZADA
 		
-			echo "computarizada";
+			$nrofac = $documento[0]['NROFAC'];
+			$nroaut = $documento[0]['NROAUT'];
+			
+			$this->objParam->addParametro('nrofac',$nrofac);
+			$this->objParam->addParametro('nroaut',$nroaut);
+			
+			$datos = $this->conceptosComputarizada();
+		
+			
+		}elseif(trim($documento[0]['IDDOC']) == 'FACMAN'){//DOCUMENTO FACTURA MANUAL
+		
+			echo "manual";
 			exit;
-		
-			
-		}elseif($tipo_de_documento == 'FACMAN'){//DOCUMENTO FACTURA MANUAL
-		
-			
 		}
 		
 		$this->respuesta=new Mensaje();
@@ -568,7 +577,7 @@ class MODLiquidevolu extends MODbase{
 				$sql_nota = "select count(*) as count from notacrdb where billete = '$billete' ";
 				$statement2=$link->prepare($sql_nota);
 				
-					
+				
 				$statement2->execute();
 				$results2=$statement2->fetchAll(PDO::FETCH_ASSOC);
 				
@@ -617,6 +626,19 @@ class MODLiquidevolu extends MODbase{
 					
 					
 					
+				}else{
+						$sql = "select nronota from notacrdb where billete = '$billete'";
+						$prepare = $link->prepare($sql);
+						$prepare->execute();
+						$resultado= $prepare->fetchAll(PDO::FETCH_ASSOC); 	
+						
+						
+					$this->respuesta=new Mensaje();
+					
+					$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+					$this->respuesta->setTotal($resultado[0]['NRONOTA']);
+					$this->respuesta->setDatos("PERTENECE A UNA NOTA");
+				
 				}
 			}else{
 				$this->respuesta=new Mensaje();
@@ -699,87 +721,103 @@ class MODLiquidevolu extends MODbase{
 		$nrofac = $this->aParam->getParametro('nrofac');
 		$nroaut = $this->aParam->getParametro('nroaut');
 		
+		$cone=new conexion();		
+		$link=$cone->conectarPDOInformix();
+		
+		
 		$this->respuesta=new Mensaje();
 		
 		if($this->datosNoPermitidos()){
-
-		if($this->siExisteComputarizada()){//facturas computarizadas
-			//echo "existe";
-			$tipo_de_factura = $this->facturaComputarizada();
-			$conceptos = $this->conceptosComputarizada();
+			
+			$sql= "select count(*) as count from notacrdb where nroaut = '$nroaut' and nrofac = '$nrofac' ";
+			
+			$stmt = $link->prepare($sql);
+			$stmt->execute();
+			$results=$stmt->fetchAll(PDO::FETCH_ASSOC);
 			
 			
-		}elseif($this->siExisteManual()){//facturas manuales
-			
-			$monto = 0;
-			$tipo_de_factura = $this->facturaManual();
-			$conceptos = $this->ConceptosManual();
-			
-			$monto = $monto + $manual[0]['monto'];
-			
-			if($this->siExisteFacturas()){
+			if($results[0]['COUNT'] == 0){	
+	
+				if($this->siExisteComputarizada()){//facturas computarizadas
+					//echo "existe";
+					$tipo_de_factura = $this->facturaComputarizada();
+					$conceptos = $this->conceptosComputarizada();
+					
+					
+				}elseif($this->siExisteManual()){//facturas manuales
+					
+					$monto = 0;
+					$tipo_de_factura = $this->facturaManual();
+					$conceptos = $this->ConceptosManual();
+					
+					$monto = $monto + $manual[0]['monto'];
+					
+					if($this->siExisteFacturas()){
+						
+						$facturas = $this->facturaFacturas();
+						$monto = $monto + $facturas[0]['monto'];
+						$tipo_de_factura[0]['razon'] = $facturas[0]['razon'];
+						$tipo_de_factura[0]['nit'] = $facturas[0]['nit'];
+						
+						foreach ($conceptos as $item) {
+							$conceptos[0]['razon'] = $facturas[0]['razon'];
+							$conceptos[0]['nit'] = $facturas[0]['nit'];
+						}
+						
+						
+					}
+					
+					
+					
+				}elseif($this->siExisteManual() == false){ //facturas de la tabla facturas
+					
+					
+					if($this->siExisteFacturas()){
+						
+						$tipo_de_factura = $this->facturaFacturas();
+						$conceptos = $this->ConceptosFacturas();
+						
+					}
+					
+					
+					
+					
+				}
 				
-				$facturas = $this->facturaFacturas();
-				$monto = $monto + $facturas[0]['monto'];
-				$tipo_de_factura[0]['razon'] = $facturas[0]['razon'];
-				$tipo_de_factura[0]['nit'] = $facturas[0]['nit'];
+				$i = 0;
 				
 				foreach ($conceptos as $item) {
-					$conceptos[0]['razon'] = $facturas[0]['razon'];
-					$conceptos[0]['nit'] = $facturas[0]['nit'];
+					
+					
+					if($item['moneda'] != 'BOB'){
+						
+						$conversion = $this->monedaConvercion($item['moneda'],$item['precio_original'],$item['pais'],$item['fecha']);
+						
+						$conversion[$i]['importe_original'] = "$conversion";
+						$conversion[$i]['precio_unitario'] = "$conversion";
+						
+					
+					}
+					
+					$i++;
 				}
 				
 				
-			}
-			
-			
-			
-		}elseif($this->siExisteManual() == false){ //facturas de la tabla facturas
-			
-			
-			if($this->siExisteFacturas()){
 				
-				$tipo_de_factura = $this->facturaFacturas();
-				$conceptos = $this->ConceptosFacturas();
 				
-			}
-			
-			
-			
-			
-		}
-		
-		$i = 0;
-		
-		foreach ($conceptos as $item) {
-			
-			
-			if($item['moneda'] != 'BOB'){
+						
+				$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+				$this->respuesta->setTotal(1);
+				$this->respuesta->setDatos($tipo_de_factura);
 				
-				$conversion = $this->monedaConvercion($item['moneda'],$item['precio_original'],$item['pais'],$item['fecha']);
 				
-				$conversion[$i]['importe_original'] = "$conversion";
-				$conversion[$i]['precio_unitario'] = "$conversion";
-				
+				$this->respuesta->extraData	= $conceptos;
 			
-			}
-			
-			$i++;
-		}
-		
-		
-		
-		
-				
-		$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
-		$this->respuesta->setTotal(1);
-		$this->respuesta->setDatos($tipo_de_factura);
-		
-		
-		$this->respuesta->extraData	= $conceptos;
-		
-		
-
+				}else{
+					$this->respuesta->setMensaje('EXITO',$this->nombre_archivo,'La consulta se ejecuto con exito','La consulta se ejecuto con exito','base','no tiene','no tiene','SEL','$this->consulta','no tiene');
+					$this->respuesta->setTotal(1);
+					$this->respuesta->setDatos("esta factura ya se devolvio");
+				}
 		
 		
 		

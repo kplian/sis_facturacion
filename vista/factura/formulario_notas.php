@@ -983,14 +983,17 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             
            
            	this.megrid.store.load({params:{start:0,limit:20}, 
-		       callback : function (r) {	       				
+		       callback : function (r) {	
+		       		
+		       		
+		       		       				
 		    		var concepto = r[0].data['billcupon'];
 		    		var importe_original = r[0].data['importe_original'];
 		    		var billete = r[0].data['nro_billete'];
 		    		var concepto_original = r[0].data['concepto_original'];
 		        	
 		        	//aca va la agregacion del los datos originales
-		        	
+		        	//if(r[])
 		        	this.tabsBoleto(concepto_original,importe_original,billete);
 		        	
 		        	//termina agregacion de los datos originales
@@ -1811,7 +1814,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	                	}
 	                	if(reg.datos){
 	                		
-	                		
+	                		if(reg.datos == 'esta factura ya se devolvio'){
+	                			this.mensaje_('Nota',reg.datos,'ERROR');
+	                		}
 	                		this.resetear();
 	                		
         					
@@ -1965,7 +1970,14 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			                				this.mensaje_('Error','El numero de billete pertenece a una liquidacion','ERROR');
 
 			                				
+			                			}else if(reg_new.datos == "PERTENECE A UNA NOTA"){
+			                				
+			                				
+			                				this.mensaje_('Error',reg_new.datos +'se encuentra en la nota '+reg_new.total,'ERROR');
+			                			
 			                			}else{
+			                				
+			                			
 			                				
 			                			
 			                		
