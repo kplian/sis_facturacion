@@ -898,6 +898,7 @@ class MODLiquidevolu extends MODbase{
 		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
 		
 		$sql = "select con.concepto,
+						con.concepto as concepto_original,
 						faco.pais,
 						faco.estacion,
 						faco.nroaut,
@@ -909,7 +910,11 @@ class MODLiquidevolu extends MODbase{
 						fac.nit,
 						fac.moneda,
 						fac.tcambio,
-						fac.fecha
+						fac.fecha,
+						fac.nit as nro_nit,
+						fac.nroaut as nro_aut,
+						fac.nrofac as nro_fac,
+						'FACTURA' as tipo
 						 from factucomcon faco
 						 inner join concefaccom con on con.tipocon = faco.tipocon
 						 inner join factucom fac on fac.nroaut = faco.nroaut

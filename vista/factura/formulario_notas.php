@@ -74,15 +74,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 						      
 					      
 					      }
-					      
-					     
-					      
-					    
-					      
-					     
-	                       
-
-					     
+						     
 					    },
 					    remove:function(a,b){
 					    	
@@ -94,7 +86,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	                      
 	                       
 	                       var fil = this.megrid.getStore();
-	                      console.log(fil.data);
+	                       console.log(fil.data);
 	                       var count = fil.data.getCount();
 	                      
 	                       fil.each( function(rec){
@@ -107,13 +99,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 					      	var nrofac = this.tabs.activeTab.id
 					       this.megrid.store.filter("nro_fac",nrofac);
 					      }
-					      
-					      
-					      
-	                       
-	                      
-	                       
-			                           
 					    	
 					    },
 					    
@@ -617,10 +602,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 						    id:'razon',
 						   name:'razon',	
 						    allowBlank: true,
-						    
-						    
-						    
-						    
+						      
 						})
                         
                     }
@@ -702,10 +684,6 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                               ],
                                         
                            },
-                         
-                         
-                       
-                           
                            
                             {
                             xtype: 'fieldset',
@@ -965,7 +943,17 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
            
            
            
+           this.Cmp.liquidevolu.on('keyup',function(combo,record){
+           	
+	           	 console.log(this.Cmp.liquidevolu.store)
+           	
+           },this);
+           
+           
           this.Cmp.liquidevolu.on('select',function(combo,record){ 
+    		
+    		
+
     		
     		this.tabs.removeAll();
     		this.resetGroup(10);
@@ -983,35 +971,31 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             
            
            	this.megrid.store.load({params:{start:0,limit:20}, 
-		       callback : function (r) {	
-		       		
-		       		
-		       		       				
-		    		var concepto = r[0].data['billcupon'];
-		    		var importe_original = r[0].data['importe_original'];
-		    		var billete = r[0].data['nro_billete'];
-		    		var concepto_original = r[0].data['concepto_original'];
-		        	
-		        	//aca va la agregacion del los datos originales
-		        	//if(r[])
-		        	this.tabsBoleto(concepto_original,importe_original,billete);
-		        	
-		        	//termina agregacion de los datos originales
-		        	
-		        	this.agregarDatosCampo(r[0].data['nro_fac'],r[0].data['razon'],r[0].data['nro_nit'],r[0].data['fecha'],r[0].data['importe_original'],r[0].data['nro_aut']);
-		        	
-		    		
-		    			    		
+		       callback : function (r,a) {	
+		       		console.log(r.length)    	
+		       		if(r[0].data['tipo'] == 'FACTURA'){
+		       			
+		       			var arra = new Array();
+				    	for (var i = 0; i < r.length; i++) {
+							arra[i] = r[i].data;
+					    }
+						this.tabsFactura(arra);
+		       		}else{
+		       			var concepto = r[0].data['billcupon'];
+			    		var importe_original = r[0].data['importe_original'];
+			    		var billete = r[0].data['nro_billete'];
+			    		var concepto_original = r[0].data['concepto_original'];
+			        	//aca va la agregacion del los datos originales
+			        	//if(r[])
+			        	this.tabsBoleto(concepto_original,importe_original,billete);
+			        	//termina agregacion de los datos originales
+			        	this.agregarDatosCampo(r[0].data['nro_fac'],r[0].data['razon'],r[0].data['nro_nit'],r[0].data['fecha'],r[0].data['importe_original'],r[0].data['nro_aut']);
+		       		}
 		    	},scope : this
 		    });
-            
-
-            
            },this);
-           
-           
-           
-           
+
+
           this.megrid.initialConfig.columns[3].editor.on('blur',function(){   
           	//aca
           	var nroaut = this.tabs.activeTab.name;
@@ -1311,6 +1295,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	    					url:'../../sis_facturacion/control/Liquidevolu/listarLiquidevolu',
 	    					id: 'nroliqui',
 	    					root: 'datos',
+	    					 
 	    					
 	    					sortInfo:{
 	    						field: 'nroliqui',
@@ -1322,6 +1307,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	    					remoteSort: true,
 	    					baseParams:{par_filtro:'nroliqui#nroliqui'}
 	    				}),
+	    				
 	       				valueField: 'nroliqui',
 	       				displayField: 'nroliqui',
 	       				
@@ -1345,7 +1331,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	       			    tdata:{},
 	       			    tcls:'persona',
 	       			    pid:this.idContenedor,
-	       			
+	       				
 	       				renderer:function (value, p, record){return String.format('{0}', record.data['nroliqui']);}
 	       			},
 	       			type: 'ComboBox',
@@ -2091,6 +2077,8 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
      },
      
      tabsFactura:function(countData){
+     	
+     	
      	var m = '';
 		    		m +='<table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">';
 					m +='<thead>';
