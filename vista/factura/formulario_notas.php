@@ -66,7 +66,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 						      if(this.tabs.activeTab.name == 1){ // se fija si es boleto para bloquear agregar concepto
 						      	this.megrid.addCon.disabled = true;
 						      	this.megrid.removeBtn.disabled = true;
-						      	
+
 						      }else{
 						      	this.megrid.addCon.disabled = false;
 						      	this.megrid.removeBtn.disabled = false;
@@ -92,15 +92,16 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 	                       fil.each( function(rec){
 	                       	 this.mestore.remove(rec);
 	                       	
-	                       }, this )
+	                       }, this );
 	                       
 	                       this.megrid.store.clearFilter();
+
 	                       if(this.tabs.activeTab != undefined){
 					      	var nrofac = this.tabs.activeTab.id
 					       this.megrid.store.filter("nro_fac",nrofac);
 					      }
 					    	
-					    },
+					    }
 					    
 					  },
 				    plugins: new Ext.ux.TabCloseMenu(),
@@ -114,7 +115,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 				});
 			         
         this.addTabsBtn =  new Ext.Button({
-	        text: '<i class="fa fa-files-o fa-1g"></i> Agregar Nueva Nota',
+	        text: '<i class="fa fa-files-o fa-1g"></i> Agregar Nueva Notas',
 	        handler: this.addTab,
 	        height:200,
 	         scope:this
@@ -161,7 +162,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 		                fieldLabel: 'Factura',
 		                name: 'factura_pop'
 		            }
-		        ],
+		        ]
 		
 		        /*buttons: [{
 		            text: 'Save'
@@ -719,7 +720,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                                     id_grupo:8
                                 }
                                 
-                              ],
+                              ]
                                         
                            },
                            
@@ -825,6 +826,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             	
             	this.resetear();
             	this.Cmp.liquidevolu.disable();
+				this.Cmp.liquidevolu.setValue('');
             	
             	
             	this.Cmp.nro_factura.show();
@@ -885,6 +887,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
             
             	
             	this.Cmp.liquidevolu.disable();
+				this.Cmp.liquidevolu.setValue('');
             	
             	
             	this.resetear();
@@ -1430,7 +1433,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                 name: 'nit',
                 width:200,
                 disabled:true,
-                allowBlank: true,                
+                allowBlank: true
             },
             type:'TextField',
             id_grupo: 6,
@@ -1442,7 +1445,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
                 name: 'razon',
                 width:200,
                 disabled:true ,
-                allowBlank: true,               
+                allowBlank: true
             },
             type:'TextField',
             id_grupo: 7,
@@ -1564,7 +1567,9 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
         });
         
         
-        this.Cmp.liquidevolu.disable();  
+        this.Cmp.liquidevolu.disable();
+		this.Cmp.liquidevolu.setValue('');
+
     	//this.Cmp.boletos_id.disable();  
     	this.Cmp.id_factura.disable();  
     	this.megrid.disable();

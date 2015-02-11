@@ -17,7 +17,7 @@ Phx.vista.NotaDetalle=Ext.extend(Phx.gridInterfaz,{
     	//llama al constructor de la clase padre
 		Phx.vista.NotaDetalle.superclass.constructor.call(this,config);
 		this.init();
-		this.load({params:{start:0, limit:this.tam_pag}})
+		//this.load({params:{start:0, limit:this.tam_pag}})
 	},
 			
 	Atributos:[
@@ -31,92 +31,51 @@ Phx.vista.NotaDetalle=Ext.extend(Phx.gridInterfaz,{
 			type:'Field',
 			form:true 
 		},
+
 		{
-			config: {
-				name: 'id_factura_detalle',
-				fieldLabel: 'id_factura_detalle',
-				allowBlank: false,
-				emptyText: 'Elija una opción...',
-				store: new Ext.data.JsonStore({
-					url: '../../sis_/control/Clase/Metodo',
-					id: 'id_',
-					root: 'datos',
-					sortInfo: {
-						field: 'nombre',
-						direction: 'ASC'
-					},
-					totalProperty: 'total',
-					fields: ['id_', 'nombre', 'codigo'],
-					remoteSort: true,
-					baseParams: {par_filtro: 'movtip.nombre#movtip.codigo'}
-				}),
-				valueField: 'id_',
-				displayField: 'nombre',
-				gdisplayField: 'desc_',
-				hiddenName: 'id_factura_detalle',
-				forceSelection: true,
-				typeAhead: false,
-				triggerAction: 'all',
-				lazyRender: true,
-				mode: 'remote',
-				pageSize: 15,
-				queryDelay: 1000,
-				anchor: '100%',
-				gwidth: 150,
-				minChars: 2,
-				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_']);
-				}
+			//configuracion del componente
+			config:{
+				labelSeparator:'',
+				inputType:'hidden',
+				name: 'id_factura_detalle'
 			},
-			type: 'ComboBox',
-			id_grupo: 0,
-			filters: {pfiltro: 'movtip.nombre',type: 'string'},
-			grid: true,
-			form: true
+			type:'Field',
+			form:true
 		},
+
 		{
-			config: {
-				name: 'id_nota',
-				fieldLabel: 'id_nota',
-				allowBlank: false,
-				emptyText: 'Elija una opción...',
-				store: new Ext.data.JsonStore({
-					url: '../../sis_/control/Clase/Metodo',
-					id: 'id_',
-					root: 'datos',
-					sortInfo: {
-						field: 'nombre',
-						direction: 'ASC'
-					},
-					totalProperty: 'total',
-					fields: ['id_', 'nombre', 'codigo'],
-					remoteSort: true,
-					baseParams: {par_filtro: 'movtip.nombre#movtip.codigo'}
-				}),
-				valueField: 'id_',
-				displayField: 'nombre',
-				gdisplayField: 'desc_',
-				hiddenName: 'id_nota',
-				forceSelection: true,
-				typeAhead: false,
-				triggerAction: 'all',
-				lazyRender: true,
-				mode: 'remote',
-				pageSize: 15,
-				queryDelay: 1000,
-				anchor: '100%',
-				gwidth: 150,
-				minChars: 2,
-				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_']);
-				}
+			//configuracion del componente
+			config:{
+				labelSeparator:'',
+				inputType:'hidden',
+				name: 'id_nota'
 			},
-			type: 'ComboBox',
-			id_grupo: 0,
-			filters: {pfiltro: 'movtip.nombre',type: 'string'},
-			grid: true,
-			form: true
+			type:'Field',
+			form:true
 		},
+
+
+
+
+
+
+
+		{
+			config:{
+				name: 'concepto',
+				fieldLabel: 'concepto',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:10
+			},
+			type:'TextField',
+			filters:{pfiltro:'deno.concepto',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:false
+		},
+
 		{
 			config:{
 				name: 'estado_reg',
@@ -242,9 +201,9 @@ Phx.vista.NotaDetalle=Ext.extend(Phx.gridInterfaz,{
 	],
 	tam_pag:50,	
 	title:'Detalle Nota',
-	ActSave:'../../sis_factu/control/NotaDetalle/insertarNotaDetalle',
-	ActDel:'../../sis_factu/control/NotaDetalle/eliminarNotaDetalle',
-	ActList:'../../sis_factu/control/NotaDetalle/listarNotaDetalle',
+	ActSave:'../../sis_facturacion/control/NotaDetalle/insertarNotaDetalle',
+	ActDel:'../../sis_facturacion/control/NotaDetalle/eliminarNotaDetalle',
+	ActList:'../../sis_facturacion/control/NotaDetalle/listarNotaDetalle',
 	id_store:'id_nota_detalle',
 	fields: [
 		{name:'id_nota_detalle', type: 'numeric'},
@@ -260,14 +219,33 @@ Phx.vista.NotaDetalle=Ext.extend(Phx.gridInterfaz,{
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
+
+		{name:'concepto', type: 'string'},
 		
 	],
 	sortInfo:{
 		field: 'id_nota_detalle',
 		direction: 'ASC'
 	},
-	bdel:true,
-	bsave:true
+	bdel:false,
+	bsave:false,
+	bdel:false,
+	bsave:false,
+	bedit:false,
+	bnew:false,
+		preparaMenu:function(tb){
+			// llamada funcion clace padre
+			Phx.vista.NotaDetalle.superclass.preparaMenu.call(this,tb)
+		},
+		onButtonNew:function(){
+			Phx.vista.NotaDetalle.superclass.onButtonNew.call(this);
+			this.getComponente('id_nota').setValue(this.maestro.id_nota);
+		},
+		onReloadPage:function(m){
+			this.maestro=m;
+			this.store.baseParams={id_nota:this.maestro.id_nota};
+			this.load({params:{start:0, limit:50}})
+		}
 	}
 )
 </script>

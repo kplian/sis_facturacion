@@ -8,12 +8,14 @@
 */
 require_once(dirname(__FILE__).'/numLetra.php');
 require_once(dirname(__FILE__).'/../../lib/tcpdf/tcpdf_barcodes_2d.php');
-class ACTNota extends ACTbase{    
-			
+class ACTNota extends ACTbase{
+
 	function listarNota(){
 		$this->objParam->defecto('ordenacion','id_nota');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
+
+
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
 			$this->res = $this->objReporte->generarReporteListado('MODNota','listarNota');
@@ -21,6 +23,10 @@ class ACTNota extends ACTbase{
 			$this->objFunc=$this->create('MODNota');
 			
 			$this->res=$this->objFunc->listarNota($this->objParam);
+
+
+
+
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
@@ -54,7 +60,13 @@ class ACTNota extends ACTbase{
 	
 	
 	function generarNota(){
-	
+
+
+
+		if($this->objParam->getParametro('reimpresion') != ''){
+			$this->reImpresion();
+		}
+
 		$this->objParam->defecto('ordenacion','nro_nota');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
@@ -382,6 +394,10 @@ class ACTNota extends ACTbase{
 					        <tr>
 					            <td colspan="4" align="left">Fecha Limite de Emision: '.$item['fecha_limite'].'</td>
 					        </tr>
+
+					         <tr>
+					            <td colspan="4" align="left">OBS: '.$item['nro_liquidacion'].'</td>
+					        </tr>
 					        
 							<tr>
 					            <td colspan="4" align="center">'.$barcodeobj->getBarcodeHTML(3, 3, 'black').'</td>
@@ -437,7 +453,15 @@ class ACTNota extends ACTbase{
 		$ori =$this->objFunc2->listarFacturaConceptosOriginales($this->objParam);
 		return $ori;
 	}
-	
+
+	function reImpresion(){
+
+		$this->objFunc2=$this->create('MODNota');
+		$re =$this->objFunc2->reImpresion($this->objParam);
+		return $re;
+
+	}
+
 	function crearReporteNotas(){
 		
 		

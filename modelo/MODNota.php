@@ -1106,6 +1106,23 @@ class MODNota extends MODbase{
 		
 		
 	}
-			
+
+	function reImpresion(){
+
+		$id_nota = $this->aParam->getParametro('notas');
+		$date = new DateTime('now');
+
+		$arreglo_impresion = '{'.$_SESSION['ss_id_usuario'].', "'.$_SESSION['_NOM_USUARIO'].'", '.$date->format('Y-m-d H:i:s').'}';
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+
+		$reim = $link->prepare("update fac.tnota set reimpresion = reimpresion  || '$arreglo_impresion' WHERE id_nota ='$id_nota'");
+
+		$reim->execute();
+
+		//$dosi_result = $reim->fetchAll(PDO::FETCH_ASSOC);
+
+	}
+
 }
 ?>
