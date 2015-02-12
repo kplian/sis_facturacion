@@ -19,6 +19,7 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 		this.init();
 		this.load({params:{start:0, limit:this.tam_pag}});
 		this.addButton('imprimir',{argument: {imprimir: 'imprimir_nota'},text:'<i class="fa fa-print fa-3x"></i>  Imprimir Nota',/*iconCls:'' ,*/disabled:false,handler:this.reimprimir});
+		this.addButton('anular',{argument: {imprimir: 'anular_nota'},text:'<i class="fa fa-file-excel-o fa-3x"></i> Anular Nota',/*iconCls:'' ,*/disabled:false,handler:this.anular});
 
 
 
@@ -461,6 +462,20 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 			});
 
 
+		},
+
+		anular:function() {
+
+			var rec = this.sm.getSelected();
+
+			Ext.Ajax.request({
+				url:'../../sis_facturacion/control/Nota/anularNota',
+				params:{'notas':rec.data['id_nota'],'nota_informix':rec.data['nro_nota']},
+				success: this.successExport,
+				failure: this.conexionFailure,
+				timeout:this.timeout,
+				scope:this
+			});
 		}
 
 	}

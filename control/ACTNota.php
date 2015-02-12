@@ -75,8 +75,8 @@ class ACTNota extends ACTbase{
 		$this->objFunc=$this->create('MODNota');
 		
 		$this->res=$this->objFunc->generarNota($this->objParam);
-		
-		
+
+
 		/*if($this->res->getTipo()!='EXITO'){
 			
 			$this->res->imprimirRespuesta($this->res->generarJson());
@@ -140,8 +140,7 @@ class ACTNota extends ACTbase{
 			
 			
 			
-		
-			//var_dump($item['nro_nota']);
+
 			
 			
 			
@@ -221,10 +220,20 @@ class ACTNota extends ACTbase{
 					    N.NOTA FISCAL N: 121815 <br>
 					    AUTORIZACION N: 3901021174745
 					    <div class="line"></div>
-					</div>
-					
-					
-					<div style="text-align: center; width:350px; ">
+					</div>';
+
+					if($item['estado'] == 9){
+						$html.='<div style="text-align: center; width:350px; font-size: 30pt; ">
+
+					   	N/C ANULADA<br />
+
+					    <div class="line"></div>
+
+
+					</div>';
+					}
+
+					$html.='<div style="text-align: center; width:350px; ">
 					    <table width="100%" border="0">
 					    
 							 <tr>
@@ -457,8 +466,20 @@ class ACTNota extends ACTbase{
 	function reImpresion(){
 
 		$this->objFunc2=$this->create('MODNota');
+
 		$re =$this->objFunc2->reImpresion($this->objParam);
 		return $re;
+
+	}
+
+
+
+	function anularNota(){
+
+		$this->objFunc=$this->create('MODNota');
+
+		$re =$this->objFunc->anularNota($this->objParam);
+		$this->generarNota();
 
 	}
 

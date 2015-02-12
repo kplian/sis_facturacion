@@ -635,7 +635,7 @@ class MODNota extends MODbase{
 										
 										  'estacion',
 										  '1',
-										  'estado',
+										  '1',
 										  1,
 										  '".$dosificacion[0]['nro_siguiente']."',
 										   now(),
@@ -747,9 +747,9 @@ class MODNota extends MODbase{
 		$cone=new conexion();		
 		$link=$cone->conectarpdo();
 		
-		
+
 		$items_notas = $this->aParam->getParametro('notas'); //llega los id notas
-		
+
 		
 		$cadena_aux = "";
 		if(count($items_notas) == 1){
@@ -830,8 +830,9 @@ class MODNota extends MODbase{
 				$stmt->execute();
 				
 				$results=$stmt->fetchAll(PDO::FETCH_ASSOC);	
-				
-				
+
+
+
 				
 			
 				
@@ -1121,6 +1122,62 @@ class MODNota extends MODbase{
 		$reim->execute();
 
 		//$dosi_result = $reim->fetchAll(PDO::FETCH_ASSOC);
+
+	}
+
+	function anularNota(){
+
+		$this->anularNotaPXP();
+
+	}
+
+	function anularNotaInformix(){
+		$cone_in=new conexion();
+		$informix=$cone_in->conectarPDOInformix();
+
+		try {
+			$informix->beginTransaction();
+
+		} catch (Exception $e) {
+
+		}
+	}
+
+
+	function anularNotaPXP(){
+
+		$nota = $this->aParam->getParametro('notas');
+		$id_nota = $this->aParam->getParametro('id_nota'); //id nota para comparar con informix
+
+		$cone = new conexion();
+		$link = $cone->conectarpdo();
+		try {
+			$link->beginTransaction();
+
+			$sql = "UPDATE fac.tnota SET estado = 9, total_devuelto = 0
+					,monto_total = 0, excento = 0, credfis = 0 WHERE id_nota ='$nota'";
+
+
+			$sql_conceptos ="update fac.tnota_detalle set importe = 0, exento =0,total_devuelto=0
+								where id_nota ='$nota'";
+			//$sql_conceptos ="select * from fac.tnota_detalle where id_nota = '$id_nota'";
+
+			$res = $link->prepare($sql);
+			$res->execute();
+
+			$res2 = $link->prepare($sql_conceptos);
+			$res2->execute();
+
+			//$results = $res2->fetchAll(PDO::FETCH_ASSOC);
+
+			$link->commit();
+			return true;
+
+
+
+		} catch (Exception $e) {
+			$link->rollBack();
+		}
 
 	}
 
