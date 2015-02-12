@@ -6,19 +6,19 @@ CREATE OR REPLACE FUNCTION fac.ft_dosificacion_sel (
 )
 RETURNS varchar AS
 $body$
-/**************************************************************************
- SISTEMA:		Sistema de Factura 
+  /**************************************************************************
+ SISTEMA:		Sistema de Factura
  FUNCION: 		fac.ft_dosificacion_sel
  DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'fac.tdosificacion'
  AUTOR: 		 (ada.torrico)
  FECHA:	        18-11-2014 19:17:08
- COMENTARIOS:	
+ COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
 
- DESCRIPCION:	
- AUTOR:			
- FECHA:		
+ DESCRIPCION:
+ AUTOR:
+ FECHA:
 ***************************************************************************/
 
 DECLARE
@@ -27,21 +27,21 @@ DECLARE
 	v_parametros  		record;
 	v_nombre_funcion   	text;
 	v_resp				varchar;
-			    
+
 BEGIN
 
 	v_nombre_funcion = 'fac.ft_dosificacion_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'FAC_DOSI_SEL'
  	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		ada.torrico	
+ 	#AUTOR:		ada.torrico
  	#FECHA:		18-11-2014 19:17:08
 	***********************************/
 
 	if(p_transaccion='FAC_DOSI_SEL')then
-     				
+
     	begin
     		--Sentencia de la consulta
 			v_consulta:='select
@@ -86,20 +86,20 @@ BEGIN
                         inner join fac.tactividad_economica ae on ae.id_actividad_economica = dosi.id_activida_economica
 				        inner join param.tlugar lu on lu.id_lugar = dosi.id_lugar_pais
                         where  ';
-			
+
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
 			--Devuelve la respuesta
 			return v_consulta;
-						
+
 		end;
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'FAC_DOSI_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		ada.torrico	
+ 	#AUTOR:		ada.torrico
  	#FECHA:		18-11-2014 19:17:08
 	***********************************/
 
@@ -115,23 +115,23 @@ BEGIN
                         inner join fac.tactividad_economica ae on ae.id_actividad_economica = dosi.id_activida_economica
 					    inner join param.tlugar lu on lu.id_lugar = dosi.id_lugar_pais
                         where ';
-			
-			--Definicion de la respuesta		    
+
+			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-					
+
 	else
-					     
+
 		raise exception 'Transaccion inexistente';
-					         
+
 	end if;
-					
+
 EXCEPTION
-					
+
 	WHEN OTHERS THEN
 			v_resp='';
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);

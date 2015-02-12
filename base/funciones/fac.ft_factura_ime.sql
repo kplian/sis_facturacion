@@ -7,18 +7,18 @@ CREATE OR REPLACE FUNCTION fac.ft_factura_ime (
 RETURNS varchar AS
 $body$
 /**************************************************************************
- SISTEMA:		Sistema de Factura 
+ SISTEMA:		Sistema de Factura
  FUNCION: 		fac.ft_factura_ime
  DESCRIPCION:   Funcion que gestiona las operaciones basicas (inserciones, modificaciones, eliminaciones de la tabla 'fac.tfactura'
  AUTOR: 		 (ada.torrico)
  FECHA:	        18-11-2014 19:26:15
- COMENTARIOS:	
+ COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
 
- DESCRIPCION:	
- AUTOR:			
- FECHA:		
+ DESCRIPCION:
+ AUTOR:
+ FECHA:
 ***************************************************************************/
 
 DECLARE
@@ -30,21 +30,21 @@ DECLARE
 	v_nombre_funcion        text;
 	v_mensaje_error         text;
 	v_id_factura	integer;
-			    
+
 BEGIN
 
     v_nombre_funcion = 'fac.ft_factura_ime';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'FAC_FACTU_INS'
  	#DESCRIPCION:	Insercion de registros
- 	#AUTOR:		ada.torrico	
+ 	#AUTOR:		ada.torrico
  	#FECHA:		18-11-2014 19:26:15
 	***********************************/
 
 	if(p_transaccion='FAC_FACTU_INS')then
-					
+
         begin
         	--Sentencia de la insercion
         	insert into fac.tfactura(
@@ -99,13 +99,13 @@ BEGIN
 			p_id_usuario,
 			null,
 			null
-							
-			
-			
+
+
+
 			)RETURNING id_factura into v_id_factura;
-			
+
 			--Definicion de la respuesta
-			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura almacenado(a) con exito (id_factura'||v_id_factura||')'); 
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura almacenado(a) con exito (id_factura'||v_id_factura||')');
             v_resp = pxp.f_agrega_clave(v_resp,'id_factura',v_id_factura::varchar);
 
             --Devuelve la respuesta
@@ -113,10 +113,10 @@ BEGIN
 
 		end;
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'FAC_FACTU_MOD'
  	#DESCRIPCION:	Modificacion de registros
- 	#AUTOR:		ada.torrico	
+ 	#AUTOR:		ada.torrico
  	#FECHA:		18-11-2014 19:26:15
 	***********************************/
 
@@ -148,20 +148,20 @@ BEGIN
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai
 			where id_factura=v_parametros.id_factura;
-               
+
 			--Definicion de la respuesta
-            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura modificado(a)'); 
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura modificado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_factura',v_parametros.id_factura::varchar);
-               
+
             --Devuelve la respuesta
             return v_resp;
-            
+
 		end;
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'FAC_FACTU_ELI'
  	#DESCRIPCION:	Eliminacion de registros
- 	#AUTOR:		ada.torrico	
+ 	#AUTOR:		ada.torrico
  	#FECHA:		18-11-2014 19:26:15
 	***********************************/
 
@@ -171,31 +171,31 @@ BEGIN
 			--Sentencia de la eliminacion
 			delete from fac.tfactura
             where id_factura=v_parametros.id_factura;
-               
+
             --Definicion de la respuesta
-            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura eliminado(a)'); 
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura eliminado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_factura',v_parametros.id_factura::varchar);
-              
+
             --Devuelve la respuesta
             return v_resp;
 
 		end;
-         
+
 	else
-     
+
     	raise exception 'Transaccion inexistente: %',p_transaccion;
 
 	end if;
 
 EXCEPTION
-				
+
 	WHEN OTHERS THEN
 		v_resp='';
 		v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
 		v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
 		v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 		raise exception '%',v_resp;
-				        
+
 END;
 $body$
 LANGUAGE 'plpgsql'

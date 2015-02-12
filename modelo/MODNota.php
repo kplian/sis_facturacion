@@ -414,10 +414,6 @@ class MODNota extends MODbase{
 		$items = json_decode($this->aParam->getParametro('newRecords'));
 		//$liquidevolu = $this->aParam->getParametro('liquidevolu');
 		
-		
-		
-		
-		
 		try {
 			$link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);		
 			
@@ -503,7 +499,8 @@ class MODNota extends MODbase{
 		
 		$id_nota = $this->insertarNota($item,$codigo_control,$dosificacion);	
 		$this->insertarNotaDetalle($item,$id_nota);
-		
+
+		//$this->insertarNotaInformix($item,$codigo_control,$dosificacion); //FALTA HACER ESTO
 		
 		
 		return $id_nota;
@@ -707,6 +704,50 @@ class MODNota extends MODbase{
 		
 		
 	}
+	function insertarNotaInformix($item,$codigo_control,$dosificacion){
+		$cone_in=new conexion();
+		$informix=$cone_in->conectarPDOInformix();
+
+
+		if($item->nro_billete != ''){
+			$item->nrofac = '';
+			$item->nroaut = '';
+		}
+		$nroliqui = $this->objParam->getParametro('liquidevolu');
+		var_dump($nroliqui);
+		exit;
+		/* informix insert nota*/
+		$sql_in = "INSERT INTO ingresos:notaprueba
+					(pais, estacion, puntoven, sucursal,
+					 estado, billete, nrofac, nroaut,
+					  fechafac, montofac, nronota, nroautnota,
+					   fecha, tcambio, razon, nit,
+					    nroliqui, moneda, monto, exento,
+					     ptjiva, neto, credfis, notamancom,
+					     codcontrol, observa, usuario, fechareg,
+					     horareg, devuelto, saldo)
+						VALUES
+					('BO', 'CBB', '56999913', '0',
+					 '1', '".$item->nro_billete."', '".$item->nrofac."', '".$item->nroaut."',
+					   ".$date->format('Y-m-d').", '".$item->importe_original."', '".$dosificacion[0]['nro_siguiente']."', '".$dosificacion[0]['nroaut']."',
+					   ".$date->format('Y-m-d').", '6.97', '".$item->razon."', '".$item->nit."',
+					    '".$nroliqui."', 'BO', '', '',
+					     '', '', '', '',
+					      '', '', '', 1,
+					       '', '', '');";
+
+
+
+
+		$info_nota_ins = $informix->prepare($sql_in);
+
+
+		$info_nota_ins->execute();
+
+
+		/*fin informix*/
+
+	}
 	
 	function verSiExisteNota($nrofac,$nroaut){
 		
@@ -870,7 +911,7 @@ class MODNota extends MODbase{
 
 	function saveFormBoletoManual(){
 		
-		
+
 		
 		$cone = new conexion();
 		$link = $cone->conectarpdo();
@@ -1062,7 +1103,8 @@ class MODNota extends MODbase{
 							   '".$item->total_devuelto."' , '". $item->exento ."', '13.000', '".$item->total_devuelto."',
 							    ". $credfis .", 'F22102', 'rag', ".$date->format('Y-m-d')." ,
 							     '15:18:17', '0.00', '".$item->total_devuelto ."');";
-										
+
+
 				$info_nota_ins = $informix->prepare($sql_in);
 				
 				
