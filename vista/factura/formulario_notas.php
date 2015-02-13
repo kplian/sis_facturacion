@@ -1902,7 +1902,7 @@ Phx.vista.FormNota=Ext.extend(Phx.frmInterfaz,{
 			                                importe_devolver:reg.countData[i].importe_original,
 			                                exento:0,
 			                                total_devuelto:0,
-			                                nro_billete:reg.countData[i].concepto,
+			                                nro_billete:'',
 			                                nro_nit:reg.countData[i].nit,
 			                                razon:reg.countData[i].razon,
 			                                fecha_fac:reg.countData[i].fecha,
