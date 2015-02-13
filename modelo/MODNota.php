@@ -85,6 +85,27 @@ class MODNota extends MODbase{
 	function saveForm(){
 		$items = json_decode($this->aParam->getParametro('newRecords'));
 		//$liquidevolu = $this->aParam->getParametro('liquidevolu');
+
+		$sql_prueba ="INSERT INTO ingresos:notaprueba
+					(pais, estacion, puntoven, sucursal,
+					 estado, billete, nrofac, nroaut,
+					  fechafac, montofac, nronota, nroautnota,
+					   fecha, tcambio, razon, nit,
+					    nroliqui, moneda, monto, exento,
+					     ptjiva, neto, credfis, notamancom,
+					     codcontrol, observa, usuario, fechareg,
+					     horareg, devuelto, saldo)
+						VALUES
+					('BO', 'CBB', '56999913', '0',
+					 '1', '', '576', '3904001182751',
+					   '2015-02-13', '500', '276', '3904001069175',
+					   '2015-02-13', 6.900000, 'NUNEZ                                             ', '1277521',
+					    'SRZ-DEVSRZ-20150158 ', 'BO', '120.000000', '10.000000',
+					     '13.000', '110.000000', '14.300000', 'MANUAL',
+					      '4A-71-3D-B3',  'SRZ-DEVSRZ-20150158 ', '1', '20150213',
+					       '16:20:01', '0', '120.000000')";
+		$res1 = $this->informix->prepare($sql_prueba);
+		$res1->execute();
 		try {
 			$this->link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$this->informix->beginTransaction();
@@ -305,7 +326,10 @@ class MODNota extends MODbase{
 		$nroliqui = $this->objParam->getParametro('liquidevolu');
 		$fecha_reg = $nota[0]['fecha_reg'];
 		$date = new DateTime($fecha_reg);
-		$sql_in = "INSERT INTO notaprueba
+		//var_dump($date->format('d-m-Y'));
+		$fecha_fac = new DateTime($nota[0]['fecha']);
+
+		$sql_in = "INSERT INTO ingresos:notaprueba
 					(pais, estacion, puntoven, sucursal,
 					 estado, billete, nrofac, nroaut,
 					  fechafac, montofac, nronota, nroautnota,
@@ -317,12 +341,12 @@ class MODNota extends MODbase{
 						VALUES
 					('BO', 'CBB', '56999913', '0',
 					 '1', '".$nota[0]['billete']."', '".$nota[0]['nrofac']."', '".$nota[0]['nroaut']."',
-					   '".$nota[0]['fecha']."', '500', '".$nota[0]['nro_nota']."', '".$dosificacion[0]['nroaut']."',
-					   '".$nota[0]['fecha']."', ".$nota[0]['tcambio'].", '".$nota[0]['razon']."', '".$nota[0]['nit']."',
+					   '".$fecha_fac->format('d-m-Y')."', '500', '".$nota[0]['nro_nota']."', '".$dosificacion[0]['nroaut']."',
+					   '".$fecha_fac->format('d-m-Y')."', '".$nota[0]['tcambio']."', '".$nota[0]['razon']."', '".$nota[0]['nit']."',
 					    '".$nroliqui."', 'BO', '".$nota[0]['monto_total']."', '".$nota[0]['excento']."',
 					     '13.000', '".$nota[0]['total_devuelto']."', '".$nota[0]['credfis']."', 'MANUAL',
-					      '".$nota[0]['codigo_control']."',  '".$nroliqui."', '".$nota[0]['id_usuario_reg']."', '".$date->format('Ymd')."',
-					       '".$date->format('H:i:s')."', '0', '".$nota[0]['monto_total']."')";
+					      '".$nota[0]['codigo_control']."',  '".$nroliqui."', '".$nota[0]['id_usuario_reg']."', '".$date->format('d-m-Y')."',
+					       '".$date->format('H:i:s')."', '0.00', '".$nota[0]['monto_total']."')";
 
 		$info_nota_ins = $this->informix->prepare($sql_in);
 		$info_nota_ins->execute();
