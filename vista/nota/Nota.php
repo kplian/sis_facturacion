@@ -369,6 +369,7 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 				id_grupo:1,
 				grid:true,
 				form:false
+			
 		}
 	],
 	tam_pag:50,
@@ -423,8 +424,6 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 		reimprimir:function(){
 
 			var rec = this.sm.getSelected();
-			//console.log(rec.data['id_nota'])
-
 
 			Ext.Ajax.request({
 				url:'../../sis_facturacion/control/Nota/generarNota',
@@ -467,16 +466,34 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 		anular:function() {
 
 			var rec = this.sm.getSelected();
+			//console.log(this.confirmacion());
 
-			Ext.Ajax.request({
-				url:'../../sis_facturacion/control/Nota/anularNota',
-				params:{'notas':rec.data['id_nota'],'nota_informix':rec.data['nro_nota']},
-				success: this.successExport,
-				failure: this.conexionFailure,
-				timeout:this.timeout,
-				scope:this
-			});
+
+			Ext.MessageBox.confirm('Confirmación','¿Estas seguro de querer hacer esto?',function(btn){
+				if(btn === 'yes'){
+
+					Ext.Ajax.request({
+						url:'../../sis_facturacion/control/Nota/anularNota',
+						params:{'notas':rec.data['id_nota'],'nota_informix':rec.data['nro_nota']},
+						success: this.successExport,
+						failure: this.conexionFailure,
+						timeout:this.timeout,
+						scope:this
+					});
+
+
+				}else{
+					//si el usuario canceló
+					//alert('Decidiste Cancelar la Anulacion de la nota');
+				}
+			},this);
+
+
+
+
+
 		}
+
 
 	}
 )

@@ -44,7 +44,7 @@ class MODLiquidevolu extends MODbase{
 		
 		
 	}
-	
+
 	function verTipoDevolucion($nroliqui){
 		
 		//$nroliqui = $this->aParam->getParametro('nroliqui');
@@ -63,10 +63,7 @@ class MODLiquidevolu extends MODbase{
 		
 	
 		return $dosi_result;
-		
-				
-				
-				
+
 		
 	}
 	
@@ -911,6 +908,7 @@ class MODLiquidevolu extends MODbase{
 						fac.moneda,
 						fac.tcambio,
 						fac.fecha,
+						fac.fecha as fecha_fac,
 						fac.nit as nro_nit,
 						fac.nroaut as nro_aut,
 						fac.nrofac as nro_fac,
@@ -1035,7 +1033,8 @@ class MODLiquidevolu extends MODbase{
 					fac.nroaut,
 					fac.moneda,
 					fac.tcambio,
-					fac.fecha
+					fac.fecha,
+					fac.fecha as fecha_fac
 					 from factumancon faco
 					 inner join concefac con on con.tipocon = faco.tipdoc
 					 inner join factuman fac on fac.nroaut = faco.nroaut
@@ -1101,7 +1100,8 @@ class MODLiquidevolu extends MODbase{
 					fac.nroaut,
 					fac.moneda,
 					fac.tcambio,
-					fac.fecha
+					fac.fecha,
+					fac.fecha as fecha_fac
 					 from factumancon faco
 					 inner join concefac con on con.tipocon = faco.tipdoc
 					 inner join facturas fac on fac.nroaut = faco.nroaut

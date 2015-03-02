@@ -52,9 +52,18 @@ function ValorEnLetras($x, $Moneda )
     $s = $s . $Moneda;
     if($Frc != $this->Void)
     {
-       $s = $s . " Con " . $this->SubValLetra(intval($Frc)) . "Centavos";
-       //$s = $s . " " . $Frc . "/100";
+       //$s = $s . " Con " . $this->SubValLetra(intval($Frc)) . "Centavos";
+
+       $s = $s . " " . $Frc . "/100";
     }
+    if($Frc == $this->Void)
+    {
+        //$s = $s . " Con " . $this->SubValLetra(intval($Frc)) . "Centavos";
+
+        $s = $s . "00/100";
+    }
+
+
     return ($Signo . $s . " BS.");
    
 }

@@ -120,6 +120,8 @@ class ACTNota extends ACTbase{
 				
 				
 			}
+
+
 			
 						
 			//listamos detalle de la nota
@@ -141,8 +143,7 @@ class ACTNota extends ACTbase{
 			
 			
 
-			
-			
+
 			
 			$html ='<!doctype html>
 					<html>
@@ -217,8 +218,8 @@ class ACTNota extends ACTbase{
 					    <div class="line"></div>
 					
 					    NIT: 154422029 <br>
-					    N.NOTA FISCAL N: 121815 <br>
-					    AUTORIZACION N: 3901021174745
+					    N.NOTA FISCAL N: '.$item['nro_nota'].'<br>
+					    AUTORIZACION N: '.$item['nroaut'].'
 					    <div class="line"></div>
 					</div>';
 
@@ -243,7 +244,6 @@ class ACTNota extends ACTbase{
 					
 					        <tr>
 					            <td colspan="4" align="left">Señor(es):'.trim($item['razon']).'</td>
-					
 					        </tr>
 					
 					        <tr>
@@ -260,20 +260,20 @@ class ACTNota extends ACTbase{
 					        </tr>
 					        <tr>
 					            <td align="left">N.Factura:</td>
-					            <td align="left">'.$item['nro_nota'].'</td>
+					            <td align="left">'.$item['factura'].'</td>
 					            <td></td>
 					            <td></td>
 					        </tr>
 					
 					        <tr>
 					            <td align="left">Autorizacion:</td>
-					            <td align="left">'.$item['nroaut'].'</td>
+					            <td align="left">'.$item['autorizacion'].'</td>
 					            <td>&nbsp;</td>
 					            <td>&nbsp;</td>
 					        </tr>
 					        <tr>
 					            <td align="left">Fecha:</td>
-					            <td align="left">30/11/2014</td>
+					            <td align="left">'.$item['fecha_fac'].'</td>
 					            <td>&nbsp;</td>
 					            <td>&nbsp;</td>
 					        </tr>
@@ -304,8 +304,10 @@ class ACTNota extends ACTbase{
 					            <td>'.number_format($item_detalle['importe_original'], 2, '.', '').'</td>
 					            <td>'.number_format($item_detalle['importe_original'], 2, '.', '').'</td>
 					        </tr>';
-							$total_original = $total_original + $item_detalle['monto'];
+							$total_original = $total_original + $item_detalle['importe_original'];
 					        }
+
+
 
 
 					
