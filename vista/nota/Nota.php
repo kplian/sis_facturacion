@@ -6,6 +6,7 @@
 *@date 18-11-2014 19:30:03
 *@description Archivo con la interfaz de usuario que permite la ejecucion de todas las funcionalidades del sistema
 */
+/*favio ooo*/
 
 header("content-type: text/javascript; charset=UTF-8");
 ?>
@@ -479,6 +480,7 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 						failure: this.conexionFailure,
 						timeout:this.timeout,
 						scope:this
+
 					});
 
 

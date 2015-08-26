@@ -181,7 +181,7 @@ class MODLiquidevolu extends MODbase{
 			
 			$datos_del_boleto[0]['importe_original'] = "$conversion";
 			$datos_del_boleto[0]['precio_unitario'] = "$conversion";
-			$datos_del_boleto[0]['total_devuelto'] = "$conversion";
+			//$datos_del_boleto[0]['total_devuelto'] = "$conversion";
 			$datos_del_boleto[0]['importe_devolver'] = "$conversion";
 		
 		}
@@ -274,7 +274,7 @@ class MODLiquidevolu extends MODbase{
 				                         '$concepto' as concepto,
 				                         '$concepto_original' as concepto_original,
 				                         bo.importe as precio_unitario,
-				                         bo.importe as total_devuelto,
+				                         (factu.monto - factu.exento) as total_devuelto,
 				                         bo.importe as importe_devolver,
 				                         bo.billete as nro_fac,
 				                         '1' as nro_aut,
@@ -288,8 +288,13 @@ class MODLiquidevolu extends MODbase{
 		$prepare_facturas = $informix->prepare($sql_facturas);
 		$prepare_facturas->execute();
 		
+		
+		
 		// obtengo los datos de razon social y nit
 		$resultado_factura = $prepare_facturas->fetchAll(PDO::FETCH_ASSOC); 
+		
+		/*var_dump($resultado_factura);
+		exit;*/
 				
 		return $resultado_factura;	
 		

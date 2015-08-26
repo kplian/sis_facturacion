@@ -196,7 +196,8 @@ class MODNota extends MODbase
 
     function insertarNota($item, $codigo_control, $dosificacion)
     {
-        $credfis = $item->total_devuelto * 0.13;
+    	$total_para_devolver = $item->importe_devolver - $item->exento;
+        $credfis = $total_para_devolver * 0.13;
         $id_dosi = $dosificacion[0]['id_dosificacion'];
         $stmt = $this->link->prepare("INSERT INTO fac.tnota
 										(
@@ -256,7 +257,7 @@ class MODNota extends MODbase
 										  1,
 										  " . $item->importe_devolver . ",
 										   " . $item->exento . ",
-										   '" . $item->total_devuelto . "',
+										   '" . $total_para_devolver . "',
 										  " . $credfis . ",
 										  '" . $item->nro_billete . "',
 										  '" . $codigo_control[0]['f_gen_cod_control'] . "',
@@ -343,7 +344,7 @@ class MODNota extends MODbase
 					   '" . $fecha_fac->format('d-m-Y') . "', '500', '" . $nota[0]['nro_nota'] . "', '" . $dosificacion[0]['nroaut'] . "',
 					   '" . $fecha_fac->format('d-m-Y') . "', '" . $nota[0]['tcambio'] . "', '" . $nota[0]['razon'] . "', '" . $nota[0]['nit'] . "',
 					    '" . $nroliqui . "', 'BO', '" . $nota[0]['monto_total'] . "', '" . $nota[0]['excento'] . "',
-					     '13.000', '" . $nota[0]['total_devuelto'] . "', '" . $nota[0]['credfis'] . "', 'MANUAL',
+					     '13.000', '" . $nota[0]['total_devuelto'] . "', '" . $nota[0]['credfis'] . "', 'COMPUTARIZADA',
 					      '" . $nota[0]['codigo_control'] . "',  '" . $nroliqui . "', '" . $nota[0]['id_usuario_reg'] . "', '" . $date->format('d-m-Y') . "',
 					       '" . $date->format('H:i:s') . "', '0.00', '" . $nota[0]['monto_total'] . "')";
 
@@ -352,6 +353,7 @@ class MODNota extends MODbase
         $results = $info_nota_ins->fetchAll(PDO::FETCH_ASSOC);
         return true;
     }
+
 
     function verSiExisteNota($nrofac, $nroaut)
     {

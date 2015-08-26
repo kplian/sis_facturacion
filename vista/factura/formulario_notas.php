@@ -10,6 +10,7 @@ header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
     Phx.vista.FormNota = Ext.extend(Phx.frmInterfaz, {
+    	
             ActSave: '../../sis_facturacion/control/Nota/saveForm',
             botones: false,
             ciudadOrigen: '',

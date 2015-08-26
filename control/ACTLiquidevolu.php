@@ -15,7 +15,7 @@ class ACTLiquidevolu extends ACTbase{
 		$this->objParam->defecto('ordenacion','nroliqui');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
-
+		
 
 
 		//$this->objParam->addFiltro("li.estado=''1''"); //que no este pagada
