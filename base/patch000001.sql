@@ -215,3 +215,10 @@ WITHOUT OIDS;
 ALTER TABLE fac.tnota ADD fecha_fac DATE NULL;
 
 /***********************************F-SCP-FFP-FAC-4-20/02/2015****************************************/
+
+
+/***********************************I-SCP-FFP-FAC-1-02/09/2015****************************************/
+ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_impuestos SET NULL;
+ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_consumidor SET NULL;
+ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_empresa SET NULL;
+/***********************************F-SCP-FFP-FAC-1-02/09/2015****************************************/
