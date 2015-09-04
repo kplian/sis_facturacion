@@ -64,7 +64,7 @@ function ValorEnLetras($x, $Moneda )
     }
 
 
-    return ($Signo . $s . " BS.");
+    return ($Signo . $s . " BOLIVIANOS.");
    
 }
 function SubValLetra($numero) 

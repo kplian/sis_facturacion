@@ -181,7 +181,7 @@ class MODLiquidevolu extends MODbase{
 			
 			$datos_del_boleto[0]['importe_original'] = "$conversion";
 			$datos_del_boleto[0]['precio_unitario'] = "$conversion";
-			//$datos_del_boleto[0]['total_devuelto'] = "$conversion";
+			$datos_del_boleto[0]['total_devuelto'] = "$conversion";
 			$datos_del_boleto[0]['importe_devolver'] = "$conversion";
 		
 		}
@@ -1130,6 +1130,17 @@ class MODLiquidevolu extends MODbase{
 		
 		$listar_cupones_originales = $this->listarCuponesOriginales($boleto);
 		$datos_del_boleto = $this->listarBoletos($boleto,$listar_cupones_originales,$listar_cupones_originales);
+		
+		if(trim($datos_del_boleto[0]['moneda']) != 'BOB'){
+					
+			$conversion = $this->monedaConvercion($datos_del_boleto[0]['moneda'], $datos_del_boleto[0]['importe_original'], $datos_del_boleto[0]['pais'],$datos_del_boleto[0]['fecha']);
+			
+			$datos_del_boleto[0]['importe_original'] = "$conversion";
+			$datos_del_boleto[0]['precio_unitario'] = "$conversion";
+			$datos_del_boleto[0]['total_devuelto'] = "$conversion";
+			$datos_del_boleto[0]['importe_devolver'] = "$conversion";
+		
+		}
 		return $datos_del_boleto;
 	}
 	

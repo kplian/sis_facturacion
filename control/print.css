@@ -22,7 +22,10 @@ h2{font-size:17pt;}
 h3{font-size:15pt;}
 h4,h5,h6{font-size:14pt;}
 
-
+.text_center{
+	text-align: center;
+	
+}
 p, h2, h3 { orphans: 3; widows: 3; }
 
 code { font: 12pt Courier, monospace; } 

@@ -139,11 +139,6 @@ class ACTNota extends ACTbase{
 			
 			setlocale(LC_ALL,"es_ES@euro","es_ES","esp");
 			
-			
-			
-	
-					
-
 
 			
 			
@@ -154,21 +149,24 @@ class ACTNota extends ACTbase{
 						<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 						<title>devoluciones</title>
 						<meta name="author" content="favio figueroa">
+						    
 					
 					  <link rel="stylesheet" href="../../../sis_facturacion/control/print.css" type="text/css" media="print" charset="utf-8">
 					  
 					</head>
-					<body onLoad="window.print();">
-					<p style="text-align: center;">
-					    BOLIVIANA DE AVIACION BoA </br>
-					    Av. SIMON LOPEZ No 1582</br>
-					    ZONA CONDEBAMBA</br>
-					    TELF. 4122438-4140873 </br>
-					    COCHABAMBA ‐ BOLIVIA
+					<body >
+					<center>
+					<p text-align: center;">
+					    &nbsp;&nbsp;&nbsp;&nbsp;BOLIVIANA DE AVIACION BOA</br>
+					    &nbsp;&nbsp;Av. SIMON LOPEZ No 1582 <br />
+					    &nbsp;&nbsp;ZONA CONDEBAMBA <br />
+					    TELF. 4122438-4140873 <br />
+					    &nbsp;&nbsp;COCHABAMBA-BOLIVIA <br />
 					</p>
+					</center>
 					<hr />
 					<p style="text-align: center;">
-					    NOTA DE CREDITO - DEBITO
+					    &nbsp;&nbsp;&nbsp;&nbsp;NOTA DE CREDITO-DEBITO
 					</p>
 					<hr />
 					<p style="text-align: center;">
@@ -196,7 +194,7 @@ class ACTNota extends ACTbase{
 					</p>
 					<hr/>
 					<p style="text-align: center;">
-					    DATOS DE LA TRANSACCION <br /> ORIGINAL
+					    &nbsp;&nbsp;&nbsp;&nbsp;DATOS DE LA TRANSACCION ORIGINAL
 					</p>
 					<hr/>
 					<p>
@@ -211,7 +209,7 @@ class ACTNota extends ACTbase{
 					
 					<thead>
 					
-						<tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SUBTOTAL</th></tr>
+						<tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
 					</thead>
 					<tbody>';
 					$total_original = 0;
@@ -229,19 +227,19 @@ class ACTNota extends ACTbase{
 					
 					$html.='</tbody>
 					    <tfoot>
-					    <tr><td colspan="4">Total Bs. '.number_format($total_original, 2, '.', '').'</td></tr>
+					    <tr><td colspan="4" align="right">Total Bs. '.number_format($total_original, 2, '.', '').' &nbsp;&nbsp;&nbsp;</td></tr>
 					    </tfoot>
 					</table>
 					<hr/>
-					<p>
-					    DETALLE DE LA DEVOLUCION O RESCICION DEL SERVICIO
+					<p style="text-align: center;">
+					    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DETALLE DE LA DEVOLUCION O &nbsp;&nbsp;RESCICION DEL SERVICIO
 					</p>
 					<hr/>
 					<table>
 					    <!-- <caption>Lorem ipsum dolor sit amet</caption> -->
 					    <thead>
 					
-					    <tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SUBTOTAL</th></tr>
+					    <tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
 					    </thead>
 					    <tbody>';
 					
@@ -263,17 +261,17 @@ class ACTNota extends ACTbase{
 					
 					    $html.='</tbody>
 					    <tfoot>
-					    <tr><td colspan="4">Total Bs. '.number_format($total_original, 2, '.', '').'</td></tr>
-					    <tr><td colspan="4">MENOS: Importes Exentos : '.number_format($exento_total, 2, '.', '').'</td></tr>
-					    <tr><td colspan="4">Importe Total Devuelto: '.number_format($total_devolver, 2, '.', '').'</td></tr>
+					    <tr><td colspan="4" align="right">Total Bs. '.number_format($total_original, 2, '.', '').' &nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+					    <tr><td colspan="3" align="left">MENOS: Importes Exentos :</td><td colspan="1" align="right"> '.number_format($exento_total, 2, '.', '').' &nbsp;</td></tr>
+					    <tr><td colspan="4" align="right">Importe Total Devuelto: '.number_format($total_devolver, 2, '.', '').' &nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 					    </tfoot>
 					</table>
 					
 					<hr/>
 					<p>
 					    Son: '.$V->ValorEnLetras(number_format($total_devolver, 2, '.', ''),"").' <br/>
-					    Monto efectivo del Credito <br/>
-					    (13% del Imp.Total Devuelto) '.number_format($item['credfis'], 2, '.', '').'
+					    Monto efectivo del Crédito o Débito <br/>
+					    (13% del Importe total Devuelto) '.number_format($item['credfis'], 2, '.', '').'
 					</p>
 					<hr/>
 					<p>
@@ -296,8 +294,23 @@ class ACTNota extends ACTbase{
 					    SANCIONADO DE ACUERDO A LEY.<br />-->
 					
 					</p>
-					<p>  �GRACIAS POR SU PREFERENCIA !
+					<p>GRACIAS POR SU PREFERENCIA !
 					    <br/> www.boa.bo</p>
+					    
+						<script language="VBScript">
+Sub Print()
+       OLECMDID_PRINT = 6
+       OLECMDEXECOPT_DONTPROMPTUSER = 2
+       OLECMDEXECOPT_PROMPTUSER = 1
+       call WB.ExecWB(OLECMDID_PRINT, OLECMDEXECOPT_DONTPROMPTUSER,1)
+End Sub
+document.write "<object ID="WB" WIDTH=0 HEIGHT=0 CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></object>"
+</script>
+
+<script type="text/javascript"> 
+window.onload=function(){self.print();} 
+</script> 
+					
 					</body>
 					</html>';
 
