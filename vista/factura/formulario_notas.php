@@ -1211,6 +1211,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo: 1,
                     form: true
                 },
+                
+                
+                 
 
 
                 {
@@ -1268,6 +1271,24 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type: 'ComboBox',
                     id_grupo: 2,
+                    form: true
+                },
+                
+                {
+                    config: {
+                        name: 'sucursal',
+                        fieldLabel: 'sucursal',
+                        allowBlank: true,
+                        emptyText: 'Tipo...',
+                        typeAhead: true,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'local',
+                        store: ['CBB', 'LPB', 'VVI'],
+                        width: 200
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
                     form: true
                 },
 

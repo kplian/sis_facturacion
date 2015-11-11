@@ -12,12 +12,17 @@ class ACTLiquidevolu extends ACTbase{
 	function listarLiquidevolu(){
 		
 	
+	
+		
+		$this->objParam->parametros_consulta['ordenacion'] = 'nroliqui';
+		
 		$this->objParam->defecto('ordenacion','nroliqui');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
 		
 
 
+		
 		//$this->objParam->addFiltro("li.estado=''1''"); //que no este pagada
 		//$this->objParam->addFiltro("li.estpago=''N''"); // que no este anulada
 		//$this->objParam->addFiltro("li.notaboa=''N''"); // que no este anulada

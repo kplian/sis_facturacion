@@ -22,6 +22,8 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 		this.addButton('imprimir',{argument: {imprimir: 'imprimir_nota'},text:'<i class="fa fa-print fa-3x"></i>  Imprimir Nota',/*iconCls:'' ,*/disabled:false,handler:this.reimprimir});
 		this.addButton('anular',{argument: {imprimir: 'anular_nota'},text:'<i class="fa fa-file-excel-o fa-3x"></i> Anular Nota',/*iconCls:'' ,*/disabled:false,handler:this.anular});
 
+		//this.addButton('Ver Reimpresiones',{argument: {imprimir: 'verImpresiones'},text:'<i class="fa fa-files-o fa-3x"></i> ver ReImpresiones',/*iconCls:'' ,*/disabled:false,handler:this.verImpresiones});
+
 
 
 	},
@@ -494,6 +496,9 @@ Phx.vista.Nota=Ext.extend(Phx.gridInterfaz,{
 
 
 
+		},
+		verImpresiones:function(){
+			var rec = this.sm.getSelected();
 		}
 
 

@@ -95,16 +95,23 @@ class MODNota extends MODbase
         //$liquidevolu = $this->aParam->getParametro('liquidevolu');
 
         try {
+        	
             $this->link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->informix->beginTransaction();
             $this->link->beginTransaction();
             $i = 0;
             foreach ($items as $item) {
                 if ($item->tipo == 'BOLETO') {
+                	 
                     $temp[] = $this->guardarNotaBoleto($item);
                 } elseif ($item->tipo == 'FACTURA') {
+                	
+					
                     if ($this->verSiExisteNota($item->nrofac, $item->nroaut) == 0) {
                         //se crea una nota para esta fila de datos por que no existe en la base de datos
+                       
+                       
+				
                         $temp[] = $this->guardarNotaFactura($item);
                         $nota = $this->verDatosDeNota($item->nrofac, $item->nroaut);
                         $this->insertarNotaDetalle($item, $nota); //mandamos la fila y el id_nota
@@ -145,28 +152,110 @@ class MODNota extends MODbase
 
     function guardarNotaBoleto($item)
     {
-        $dosificacion = $this->generarDosificacion();
-        $codigo_control = $this->generarCodigoControl($item->nit, $item->total_devuelto, $dosificacion);
-        $id_nota = $this->insertarNota($item, $codigo_control, $dosificacion);
-        $this->insertarNotaDetalle($item, $id_nota);
-        $nota_in = $this->insertarNotaInformix($id_nota, $dosificacion);
-        return $id_nota;
+    	
+		
+        $dosificacion = $this->generarDosificacion($item);
+		if(count($dosificacion) > 0){
+			$nro_siguiente  = $this->generarNroSiguiente($dosificacion);
+	        $codigo_control = $this->generarCodigoControl($item->nro_nit, $item->total_devuelto, $dosificacion,$nro_siguiente);
+	        $id_nota = $this->insertarNota($item, $codigo_control, $dosificacion,$nro_siguiente);
+	        $this->insertarNotaDetalle($item, $id_nota);
+	        $nota_in = $this->insertarNotaInformix($id_nota, $dosificacion);
+	        return $id_nota;
+		}else{
+			throw new Exception('NO tienes una dosificacion para la sucursal seleccionada');
+		}
+		
+		
     }
 
     function guardarNotaFactura($item)
     {
-
-        $dosificacion = $this->generarDosificacion();
-        $codigo_control = $this->generarCodigoControl($item->nit, $item->total_devuelto, $dosificacion);
-        $id_nota = $this->insertarNota($item, $codigo_control, $dosificacion);
-        $nota_in = $this->insertarNotaInformix($id_nota, $dosificacion);
-        return $id_nota;
+    	
+        $dosificacion = $this->generarDosificacion($item);
+		if(count($dosificacion) > 0){
+	        $codigo_control = $this->generarCodigoControl($item->nit, $item->total_devuelto, $dosificacion,$nro_siguiente);
+	        $id_nota = $this->insertarNota($item, $codigo_control, $dosificacion,$nro_siguiente);
+	        $nota_in = $this->insertarNotaInformix($id_nota, $dosificacion);
+	        return $id_nota;
+		}else{
+			throw new Exception('NO tienes una dosificacion para la sucursal seleccionada');
+		}
     }
+	
 
 
-    function generarDosificacion()
+
+	function generarNroSiguiente($dosificacion){
+		
+		$arra_json = json_encode($dosificacion[0]);
+		$nro_si = $this->link->prepare("select fac.f_dosi_siguiente('".$arra_json."')");
+		$nro_si->execute();
+        $nro_si_res = $nro_si->fetchAll(PDO::FETCH_ASSOC);
+		return $nro_si_res[0]["f_dosi_siguiente"];
+		
+	}
+    function generarDosificacion($item)
     {
-        $dosi = $this->link->prepare("select id_dosificacion,
+    	$this->informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+    	$usuario = $_SESSION['_LOGIN'];
+		
+		$sucursal = $this->aParam->getParametro('sucursal');
+		
+		$fecha_now = new DateTime("now");
+		$fecha = $fecha_now->format('Ymd');
+		
+		$sql_in_usuario = $this->informix->prepare("select * from usuarioing where idboa = '$usuario'");
+		$sql_in_usuario->execute();
+        $results_usuario = $sql_in_usuario->fetchAll(PDO::FETCH_ASSOC);		
+		
+		if(trim($results_usuario[0]['admin']) == 'RC'){
+			
+			$sql_in = $this->informix->prepare("select dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
+					from dosdoccom dos
+					where dos.estacion = '$sucursal'
+					and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
+					AND dos.estado = 'activo'
+					and dos.feciniemi <= '".$fecha_now->format('d-m-Y')."'
+					and dos.feclimemi >= '".$fecha_now->format('d-m-Y')."' ");
+					
+		}else if(trim($results_usuario[0]['admin']) == 'RE'){
+			if(trim($results_usuario[0]['estacion']) == $sucursal){
+				$sql_in = $this->informix->prepare("select dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
+					from dosdoccom dos
+					where dos.estacion = '$sucursal'
+					and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
+					AND dos.estado = 'activo'
+					and dos.feciniemi <= '".$fecha_now->format('d-m-Y')."'
+					and dos.feclimemi >= '".$fecha_now->format('d-m-Y')."' ");
+			}else{
+				throw new Exception('NO tienes permiso para certificar CON ESTA SUCURSAL ('.$sucursal.')');
+			}
+		}
+		
+		
+		
+		
+		
+		/*$sql_in = $this->informix->prepare("select su.sucursal,ag.agt,li.nroliqui,
+					dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
+					from liquidevolu li
+					inner join agencias ag on ag.agt = li.puntodev
+					inner join sucursal su on su.sucursal = ag.sucursal
+					inner join dosdoccom dos on dos.sucursal = su.sucursal
+					where li.nroliqui = '$nroliqui'
+					and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
+					AND dos.estado = 'activo'
+					and dos.feciniemi <= '".$fecha_now->format('d-m-Y')."'
+					and dos.feclimemi >= '".$fecha_now->format('d-m-Y')."' ");*/
+
+		
+        $sql_in->execute();
+        $results = $sql_in->fetchAll(PDO::FETCH_ASSOC);
+      
+		
+		
+        /*$dosi = $this->link->prepare("select id_dosificacion,
 											       nro_siguiente,
 											       fecha_inicio_emi,
 											       fecha_limite,
@@ -176,26 +265,42 @@ class MODNota extends MODbase
 											order by fecha_inicio_emi DESC
 											limit 1 for update;");
         $dosi->execute();
-        $dosi_result = $dosi->fetchAll(PDO::FETCH_ASSOC);
-        return $dosi_result;
+        $dosi_result = $dosi->fetchAll(PDO::FETCH_ASSOC);*/
+        
+        return $results;
     }
 
-    function generarCodigoControl($nit, $total_devuelto, $dosificacion)
+    function generarCodigoControl($nit, $total_devuelto, $dosificacion,$nro_siguiente)
     {
         $fecha_now = new DateTime("now");
         $date = new DateTime('now');
+		
+		
+		
+		
+		 
+		
         $id_dosi = $dosificacion[0]['id_dosificacion'];
+        
         $func_cod_con = $this->link->prepare("select pxp.f_gen_cod_control(
 										'" . $dosificacion[0]['llave'] . "',
-										'" . $dosificacion[0]['nroaut'] . "','" . $dosificacion[0]['nro_siguiente'] . "','" . $nit . "','" . $date->format('Ymd') . "','" . $total_devuelto . "')");
+										'" . $dosificacion[0]['nroaut'] . "','" . $nro_siguiente . "','" . $nit . "','" . $date->format('Ymd') . "',round('" . $total_devuelto . "',0))");
+										
+						
+				
+					   	
         $func_cod_con->execute();
         $codigo_control = $func_cod_con->fetchAll(PDO::FETCH_ASSOC);
         return $codigo_control;
     }
 
-
-    function insertarNota($item, $codigo_control, $dosificacion)
+   
+    function insertarNota($item, $codigo_control, $dosificacion,$nro_siguiente)
     {
+    	
+    	
+    	$razon = trim($item->razon);
+    	
     	$total_para_devolver = $item->importe_devolver - $item->exento;
         $credfis = $total_para_devolver * 0.13;
         $id_dosi = $dosificacion[0]['id_dosificacion'];
@@ -230,7 +335,9 @@ class MODNota extends MODbase
 										  id_dosificacion,
 										  nrofac,
 										  nroaut,
-										  fecha_fac
+										  fecha_fac,
+										  tipo,
+										  nroaut_anterior
 										) 
 			
 										VALUES (
@@ -247,9 +354,9 @@ class MODNota extends MODbase
 										  '1',
 										  '1',
 										  1,
-										  '" . $dosificacion[0]['nro_siguiente'] . "',
+										  '" . $nro_siguiente . "',
 										   now(),
-										  '" . $item->razon . "',
+										  trim('" . $razon . "'),
 										  '6.9',
 										  '" . $item->nro_nit . "',
 										  1,
@@ -263,10 +370,16 @@ class MODNota extends MODbase
 										  '" . $codigo_control[0]['f_gen_cod_control'] . "',
 										  '" . $dosificacion[0]['id_dosificacion'] . "',
 										  '" . $item->nrofac . "',
-										  '" . $item->nroaut . "',
-										  '" . $item->fecha_fac . "'
+										  '" . $dosificacion[0]['nroaut'] . "',
+										  '" . $item->fecha_fac . "',
+										  '". $item->tipo."',
+										  '". $item->nroaut."'
 										)RETURNING id_nota;");
-        $dosi_up = $this->link->prepare("update fac.tdosificacion set nro_siguiente = (nro_siguiente + 1) where id_dosificacion = '$id_dosi'");
+										
+										
+        $dosi_up = $this->link->prepare("update fac.tdosi_correlativo set nro_siguiente = (cast(nro_siguiente as int) + 1) where id_dosificacion = '$id_dosi'");
+        
+        
         $dosi_up->execute();
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -276,6 +389,7 @@ class MODNota extends MODbase
 
     function insertarNotaDetalle($item, $id_nota)
     {
+    		
         $stmt2 = $this->link->prepare("INSERT INTO
 				  fac.tnota_detalle
 				(
@@ -358,18 +472,26 @@ class MODNota extends MODbase
     function verSiExisteNota($nrofac, $nroaut)
     {
         $stmt2 = $this->link->prepare("select count(*) as count
-								 from fac.tnota where nrofac = '$nrofac' and nroaut = '$nroaut' AND estado = '1'");
+								 from fac.tnota where nrofac = '$nrofac' and nroaut_anterior = '$nroaut' AND estado = '1'");
         $stmt2->execute();
         $results = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+		
+		
         return $results[0]['count'];
     }
 
     function verDatosDeNota($nrofac, $nroaut)
     {
+    	
+		
         $stmt2 = $this->link->prepare("select id_nota
-								 from fac.tnota where nrofac = '$nrofac' and nroaut = '$nroaut' AND estado = '1'");
+								 from fac.tnota where nrofac = '$nrofac' and nroaut_anterior = '$nroaut' AND estado = '1'");
+								 
+								 
         $stmt2->execute();
+        
         $results = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+		
         return $results[0]['id_nota'];
     }
 
@@ -427,6 +549,8 @@ class MODNota extends MODbase
 										  nota.id_dosificacion,
 										  nota.nrofac as factura,
 										  nota.nroaut as autorizacion,
+										  nota.tipo,
+										  nota.nroaut_anterior,
 										  to_char(nota.fecha_fac,'DD-MM-YYYY') AS fecha_fac,
 
 										  dosi.nroaut,
@@ -435,8 +559,12 @@ class MODNota extends MODbase
 										  fac.tnota nota
 										  inner join fac.tdosificacion dosi on dosi.id_dosificacion = nota.id_dosificacion $cadena_aux");
 
+            
+          
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+           
             $this->link->commit();
             $this->respuesta = new Mensaje();
             $this->respuesta->setMensaje($resp_procedimiento['tipo_respuesta'], $this->nombre_archivo, $resp_procedimiento['mensaje'], $resp_procedimiento['mensaje_tec'], 'base', $this->procedimiento, $this->transaccion, $this->tipo_procedimiento, $this->consulta);
@@ -468,9 +596,12 @@ class MODNota extends MODbase
         $id_nota = $this->aParam->getParametro('notas');
         $date = new DateTime('now');
 
-        $arreglo_impresion = '{' . $_SESSION['ss_id_usuario'] . ', "' . $_SESSION['_NOM_USUARIO'] . '", ' . $date->format('Y-m-d H:i:s') . '}';
+		//inserto el arreglo de reimpresion
+        $arreglo_impresion = '{{' . $_SESSION['ss_id_usuario'] . ', "' . $_SESSION['_NOM_USUARIO'] . '", ' . $date->format('Y-m-d H:i:s') . '}}';
         $reim = $this->link->prepare("update fac.tnota set reimpresion = reimpresion  || '$arreglo_impresion' WHERE id_nota ='$id_nota'");
 
+
+		
         $reim->execute();
 
         //$dosi_result = $reim->fetchAll(PDO::FETCH_ASSOC);

@@ -28,6 +28,7 @@ DECLARE
 	v_nombre_funcion   	text;
 	v_resp				varchar;
     us 					varchar;
+    v_sucursales		varchar;
 			    
 BEGIN
 
@@ -46,6 +47,8 @@ BEGIN
 	if(p_transaccion='FAC_LIQUI_SEL')then
      				
     	begin
+        
+       		v_sucursales := ven.f_usuario_sucursal(p_id_usuario);
     		--Sentencia de la consulta
 			v_consulta:='select
             			 li.pais,
@@ -56,7 +59,7 @@ BEGIN
                          li.estpago,
                          li.estado
                          FROM informix.liquidevolu li
-				        where  ';
+				        where  ' || v_sucursales;
 			
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -77,10 +80,13 @@ BEGIN
 	elsif(p_transaccion='FAC_LIQUI_CONT')then
 
 		begin
+        
+        v_sucursales := ven.f_usuario_sucursal(p_id_usuario);
+        
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(li.nroliqui) 
                          FROM informix.liquidevolu li 
-					    where ';
+					    where ' || v_sucursales;
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;

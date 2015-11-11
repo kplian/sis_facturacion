@@ -24,9 +24,6 @@ class ACTNota extends ACTbase{
 			
 			$this->res=$this->objFunc->listarNota($this->objParam);
 
-
-
-
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
@@ -87,6 +84,9 @@ class ACTNota extends ACTbase{
 		
 		
 		
+		
+		
+		
 		$html = "";
 		$i = 0;
 		
@@ -97,6 +97,8 @@ class ACTNota extends ACTbase{
 		
 		
 		foreach ($notas as $item) {
+			
+			
 			/* Cadena para qr |nit emisor|razon social emisor|Número de Factura |Número de Autorización|
 			|Fecha de emisión|Importe de la compra |Código de Contro|Fecha Límite de Emisión| NIT comprador | razon comprador| */
 			//$cadena_qr = "|154422029|BOLIVIANA DE AVIACION|123|123|28/12/2014|67.10|73-65-52-A5-FE|29/12/2014"; 
@@ -108,18 +110,22 @@ class ACTNota extends ACTbase{
 			
 			//obtenemos conceptos originales de esta factura o boleto
 			
-			if($item['autorizacion'] == 1){ //esta autorizacion es de la nota ya sea de factura o boleto
+			
+			
+			
+			if($item['tipo'] == 'BOLETO'){ //esta autorizacion es de la nota ya sea de factura o boleto
 				
 				
 				$original = $this->listarBoletosOriginales($item['factura']);
 				
 			}else{
 				
-				$original = $this->listarFacturaOriginales($item['factura'],$item['autorizacion']);
+				$original = $this->listarFacturaOriginales($item['factura'],$item['nroaut_anterior']);
 				
 				
 				
 			}
+
 
 
 				
@@ -134,6 +140,8 @@ class ACTNota extends ACTbase{
 			}
 			
 			$detalles = $this->res2->getDatos();
+			
+			
 			
 			
 			
@@ -337,6 +345,7 @@ window.onload=function(){self.print();}
 	}
 	
 	function listarFacturaOriginales($factura,$autorizacion){
+		
 		
 		
 		$this->objParam->addParametro('nrofac',$factura);

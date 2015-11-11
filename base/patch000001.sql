@@ -221,4 +221,52 @@ ALTER TABLE fac.tnota ADD fecha_fac DATE NULL;
 ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_impuestos SET NULL;
 ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_consumidor SET NULL;
 ALTER TABLE fac.tdosificacion ALTER COLUMN glosa_empresa SET NULL;
+
+ALTER TABLE fac.tnota
+  DROP COLUMN reimpresion;
+  
+ALTER TABLE fac.tnota
+  ADD COLUMN reimpresion VARCHAR(255)[][];
+  
+  
+  CREATE TABLE fac.tcasosprueba (
+  id_caso_prueba SERIAL,
+  autorizacion NUMERIC,
+  factura NUMERIC,
+  nit NUMERIC,
+  fecha VARCHAR(255),
+  anio VARCHAR(255),
+  mes VARCHAR(255),
+  dia VARCHAR(255),
+  monto NUMERIC,
+  llave VARCHAR(255),
+  codigo_de_control_impuestos VARCHAR(255),
+  codigo_control_pxp VARCHAR(255),
+  validacion VARCHAR(255)
+) 
+
 /***********************************F-SCP-FFP-FAC-1-02/09/2015****************************************/
+
+
+
+/***********************************I-SCP-FFP-FAC-1-10/11/2015****************************************/
+
+CREATE TABLE fac.tdosi_correlativo (
+  id_dosi_correlativo SERIAL,
+  id_dosificacion INTEGER NOT NULL,
+  nro_actual INTEGER NOT NULL,
+  nro_siguiente VARCHAR(150) NOT NULL,
+  CONSTRAINT pk_tdosi_correlativo__id_dosi_correlativo PRIMARY KEY(id_dosi_correlativo)
+) INHERITS (pxp.tbase)
+WITHOUT OIDS;
+
+
+ALTER TABLE fac.tnota
+  ADD COLUMN tipo VARCHAR(255);
+  
+  ALTER TABLE fac.tnota
+  ADD COLUMN nroaut_anterior BIGINT;
+  
+
+
+/***********************************F-SCP-FFP-FAC-1-10/11/2015****************************************/
