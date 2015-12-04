@@ -201,6 +201,10 @@ class MODNota extends MODbase {
 	}
 
 	function generarDosificacion($item) {
+		
+		$fecha_now = new DateTime("now");
+		$fecha = $fecha_now -> format('Ymd');
+		
 		$this -> informix -> setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
 		$usuario = $_SESSION['_LOGIN'];
 		
@@ -228,19 +232,30 @@ class MODNota extends MODbase {
 			            where usudep.cuenta = '$usuario' and sucus.tipo = 'RESPONSABLE' limit 1");
 		 $usuario_sucursal->execute();
 		 $usuario_sucursal_result = $usuario_sucursal->fetchAll(PDO::FETCH_ASSOC);
-		
+		 
+		$sucursal = $usuario_sucursal_result[0]['desc_sucursal'];
 		$liquidacion = $this-> aParam ->getParametro('liquidevolu');
 		
 		if(count($usuario_sucursal_result) == 1){
 			
 				if($liquidacion != ''){
-					//es por una devolucion
+					//es por una devolucion liquidacion
 					
 					$suc_de_liquidacion = $this->str_osplit($liquidacion,3); //obtenemos la sucursal de la devolucion
 					if($suc_de_liquidacion[0] == $usuario_sucursal_result[0]['desc_sucursal']){
 						//misma sucursal y que el de la liquidacion y puede ser dosificado
+						
+						$sql_in = $this -> informix -> prepare("select dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
+						from dosdoccom dos
+						where dos.estacion = '$sucursal'
+						and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
+						AND dos.estado = 'activo'
+						and dos.feciniemi <= '" . $fecha_now -> format('d-m-Y') . "'
+						and dos.feclimemi >= '" . $fecha_now -> format('d-m-Y') . "' ");
+					
+						
 					}else{
-						throw new Exception('NO puedes dosificar para una diferente estacion ');
+						throw new Exception('Solo puedes dosificar para '.$sucursal.' no para '.$suc_de_liquidacion[0].'  ');
 
 					}
 					
@@ -258,55 +273,6 @@ class MODNota extends MODbase {
 		
 		
 		
-		
-
-		$sucursal = $this -> aParam -> getParametro('sucursal');
-
-		$fecha_now = new DateTime("now");
-		$fecha = $fecha_now -> format('Ymd');
-
-		$sql_in_usuario = $this -> informix -> prepare("select * from usuarioing where idboa = '$usuario'");
-		$sql_in_usuario -> execute();
-		$results_usuario = $sql_in_usuario -> fetchAll(PDO::FETCH_ASSOC);
-
-		if (trim($results_usuario[0]['admin']) == 'RC') {
-
-			$sql_in = $this -> informix -> prepare("select dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
-					from dosdoccom dos
-					where dos.estacion = '$sucursal'
-					and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
-					AND dos.estado = 'activo'
-					and dos.feciniemi <= '" . $fecha_now -> format('d-m-Y') . "'
-					and dos.feclimemi >= '" . $fecha_now -> format('d-m-Y') . "' ");
-
-		} else if (trim($results_usuario[0]['admin']) == 'RE') {
-			if (trim($results_usuario[0]['estacion']) == $sucursal) {
-				$sql_in = $this -> informix -> prepare("select dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
-					from dosdoccom dos
-					where dos.estacion = '$sucursal'
-					and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
-					AND dos.estado = 'activo'
-					and dos.feciniemi <= '" . $fecha_now -> format('d-m-Y') . "'
-					and dos.feclimemi >= '" . $fecha_now -> format('d-m-Y') . "' ");
-			} else {
-				throw new Exception('NO tienes permiso para certificar CON ESTA SUCURSAL (' . $sucursal . ')');
-			}
-		} else {
-			throw new Exception('NO tienes permiso para usar este modulo');
-		}
-
-		/*$sql_in = $this->informix->prepare("select su.sucursal,ag.agt,li.nroliqui,
-		 dos.glosa_impuestos,dos.llave,dos.nroaut,dos.id_dosificacion,dos.sucursal,dos.inicial,dos.final,dos.estacion
-		 from liquidevolu li
-		 inner join agencias ag on ag.agt = li.puntodev
-		 inner join sucursal su on su.sucursal = ag.sucursal
-		 inner join dosdoccom dos on dos.sucursal = su.sucursal
-		 where li.nroliqui = '$nroliqui'
-		 and dos.nombre_sisfac = 'SISTEMA FACTURACION NCD'
-		 AND dos.estado = 'activo'
-		 and dos.feciniemi <= '".$fecha_now->format('d-m-Y')."'
-		 and dos.feclimemi >= '".$fecha_now->format('d-m-Y')."' ");*/
-
 		$sql_in -> execute();
 		$results = $sql_in -> fetchAll(PDO::FETCH_ASSOC);
 
