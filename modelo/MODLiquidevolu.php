@@ -95,8 +95,13 @@ class MODLiquidevolu extends MODbase{
 			
 		}elseif(trim($documento[0]['IDDOC']) == 'FACMAN'){//DOCUMENTO FACTURA MANUAL
 		
-			echo "manual";
-			exit;
+			$nrofac = $documento[0]['NROFAC'];
+			$nroaut = $documento[0]['NROAUT'];
+			
+			$this->objParam->addParametro('nrofac',$nrofac);
+			$this->objParam->addParametro('nroaut',$nroaut);
+			
+			$datos = $this->conceptosManuales();
 		}
 		
 		$this->respuesta=new Mensaje();
@@ -917,13 +922,73 @@ class MODLiquidevolu extends MODbase{
 						fac.nit as nro_nit,
 						fac.nroaut as nro_aut,
 						fac.nrofac as nro_fac,
-						'FACTURA' as tipo
+						'FACTURA' as tipo,
+						'0' as exento,
+						faco.importe as importe_devolver,
+						faco.importe as total_devuelto
 						 from factucomcon faco
 						 inner join concefaccom con on con.tipocon = faco.tipocon
 						 inner join factucom fac on fac.nroaut = faco.nroaut
 						 where con.nroconce = faco.nroconce 
 						 and fac.nrofac = faco.nrofac
 						 and faco.nrofac = '$nrofac' and faco.nroaut = '$nroaut'";
+						 
+						 
+		$prepare_con = $informix->prepare($sql);
+		$prepare_con->execute();
+		
+	
+		$resultado_con = $prepare_con->fetchAll(PDO::FETCH_ASSOC); 
+		
+		
+	
+		
+		
+		return $resultado_con;
+		
+	}
+	
+	
+	function conceptosManuales(){
+		
+		
+		$nrofac = $this->aParam->getParametro('nrofac');
+		$nroaut = $this->aParam->getParametro('nroaut');
+		$cone_in=new conexion();
+		$informix=$cone_in->conectarPDOInformix();
+		
+		$informix->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
+		
+		$sql = "select conce.concepto,
+						conce.concepto as concepto_original,
+						fcon.pais,
+						fcon.estacion,
+						fcon.nroaut,
+						fcon.nrofac,
+						
+						'1' as cantidad,
+						fcon.importe as precio_unitario,
+						fcon.importe as importe_original,
+						
+						fac.razon,
+						fac.nit,
+						fac.moneda,
+						fac.tcambio,
+						fac.fecha,
+						fac.fecha as fecha_fac,
+						fac.nit as nro_nit,
+						fac.nroaut as nro_aut,
+						fac.nrofac as nro_fac,
+						'FACTURA' as tipo,
+						'0' as exento,
+						fcon.importe as importe_devolver,
+						fcon.importe as total_devuelto
+						FROM factumancon fcon 
+						inner join concefac conce on conce.nroconce = fcon.nroconce
+						inner join factuman fac on fac.pais = conce.pais
+						where conce.tipocon = fac.tipocon and
+						fcon.nroaut = fac.nroaut and fcon.nrofac = fac.nrofac and
+						fac.nroaut= '$nroaut' and fac.nrofac = '$nrofac'";
 						 
 						 
 		$prepare_con = $informix->prepare($sql);

@@ -72,6 +72,9 @@ class ACTNota extends ACTbase{
 		$this->objFunc=$this->create('MODNota');
 		
 		$this->res=$this->objFunc->generarNota($this->objParam);
+		
+		
+		
 
 
 		/*if($this->res->getTipo()!='EXITO'){
@@ -125,8 +128,11 @@ class ACTNota extends ACTbase{
 				
 				
 			}
-
-
+			
+			$dosificacion = $this->listarDosificacion($item['id_dosificacion']);
+			//var_dump($dosificacion[0]['FECLIMEMI']);
+			//var_dump($dosificacion[0]['GLOSA_IMPUESTOS']);
+			
 
 				
 			//listamos detalle de la nota
@@ -180,7 +186,7 @@ class ACTNota extends ACTbase{
 					<p style="text-align: center;">
 					    NIT: 154422029 <br/>
 					    N&#176; NOTA FISCAL: '.$item['nro_nota'].'<br>
-					    N&#176; AUTORIZACION: '.$item['nroaut'].'<br />
+					    N&#176; AUTORIZACION: '.$item['autorizacion'].'<br />
 					    ORIGINAL<br />
 					    Transporte Regular de Pasajeros y Carga por Via Aerea
 					</p>
@@ -207,7 +213,7 @@ class ACTNota extends ACTbase{
 					<hr/>
 					<p>
 					    FACTURA: '.$item['factura'].' <br/>
-					    AUTORIZACION : '.$item['autorizacion'].'<br>
+					    AUTORIZACION : '.$item['nroaut_anterior'].'<br>
 					    FECHA DE EMISION: '.$item['fecha_fac'].'
 					</p>
 					
@@ -217,7 +223,7 @@ class ACTNota extends ACTbase{
 					
 					<thead>
 					
-						<tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
+						<tr><th>Ca</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
 					</thead>
 					<tbody>';
 					$total_original = 0;
@@ -232,22 +238,23 @@ class ACTNota extends ACTbase{
 					    $total_original = $total_original + $item_detalle['importe_original'];
 					
 					}
-					
+
+					$html.='<tr><td colspan="4"></td></tr>';
 					$html.='</tbody>
 					    <tfoot>
 					    <tr><td colspan="4" align="right">Total Bs. '.number_format($total_original, 2, '.', '').' &nbsp;&nbsp;&nbsp;</td></tr>
 					    </tfoot>
 					</table>
-					<hr/>
+					
 					<p style="text-align: center;">
-					    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DETALLE DE LA DEVOLUCION O &nbsp;&nbsp;RESCICION DEL SERVICIO
+					    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DETALLE DE LA DEVOLUCION O &nbsp;&nbsp;RESCISION DEL SERVICIO
 					</p>
 					<hr/>
 					<table>
 					    <!-- <caption>Lorem ipsum dolor sit amet</caption> -->
 					    <thead>
 					
-					    <tr><th>Cant</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
+					    <tr><th>Ca</th><th>Concepto</th><th>PU</th><th>SubTotal</th></tr>
 					    </thead>
 					    <tbody>';
 					
@@ -269,13 +276,13 @@ class ACTNota extends ACTbase{
 					
 					    $html.='</tbody>
 					    <tfoot>
-					    <tr><td colspan="4" align="right">Total Bs. '.number_format($total_original, 2, '.', '').' &nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+					    <tr><td colspan="4" align="right">Total Bs. '.number_format($importe_total, 2, '.', '').' &nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 					    <tr><td colspan="3" align="left">MENOS: Importes Exentos :</td><td colspan="1" align="right"> '.number_format($exento_total, 2, '.', '').' &nbsp;</td></tr>
 					    <tr><td colspan="4" align="right">Importe Total Devuelto: '.number_format($total_devolver, 2, '.', '').' &nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
 					    </tfoot>
 					</table>
 					
-					<hr/>
+					
 					<p>
 					    Son: '.$V->ValorEnLetras(number_format($total_devolver, 2, '.', ''),"").' <br/>
 					    Monto efectivo del Crédito o Débito <br/>
@@ -284,15 +291,18 @@ class ACTNota extends ACTbase{
 					<hr/>
 					<p>
 					    Codigo de Control: '.$item['codigo_control'].' <br/>
-					    Fecha Limite de Emision: '.$item['fecha_limite'].' <br/>
+					    Fecha Limite de Emision: '.$dosificacion[0]['FECLIMEMI'].' <br/>
 					    OBS: '.$item['nro_liquidacion'].' <br/>
 					</p>
-					<hr/>
+					
+					
+					
 					<!--<div align="center">
 								    '.$barcodeobj->getBarcodeHTML(3, 3, 'black').'
 								    </div>-->
-					<hr/>
+				
 					<p style="text-align: center">
+					
 					
 					    "La reproduccion total <br/>o parcial y/o el uso no autorizado<br/> de esta Nota
 					    Fiscal, <br/>constituye un delito a <br/>ser sancionado conforme a Ley"
@@ -356,6 +366,15 @@ window.onload=function(){self.print();}
 		$ori =$this->objFunc2->listarFacturaConceptosOriginales($this->objParam);
 		return $ori;
 	}
+
+	function listarDosificacion($id_dosificacion){
+			
+		$this->objFunc=$this->create('MODNota');	
+		$dosi =$this->objFunc->listarDosificacion($id_dosificacion);
+		
+		return $dosi;
+	}
+
 
 	function reImpresion(){
 

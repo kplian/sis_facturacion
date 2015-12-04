@@ -290,7 +290,9 @@ header("content-type: text/javascript; charset=UTF-8");
                                 cantidad: 1,
                                 detalle: '',
                                 peso: 0,
-                                total: 1
+                                total: 1,
+                                importe_devolver:0,
+                                exento:0
                             });
                             editor.stopEditing();
                             this.mestore.insert(0, e);
@@ -443,6 +445,8 @@ header("content-type: text/javascript; charset=UTF-8");
                              }*/
 
                         },
+                        
+                        
 
                         {
                             xtype: 'numbercolumn',
@@ -783,7 +787,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.megrid.enable();
 
 
-                this.Cmp.tipo_id.on('select', function (rec) {
+                this.Cmp.tipo_id.on('select', function (rec,record) {
 
                     if (this.Cmp.tipo_id.getValue() == 'FACTURA') {
 
@@ -879,7 +883,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
 
                     else if (this.Cmp.tipo_id.getValue() == 'LIQUIDACION') {
-
+                    	
+                    	
+                    	
 
                         this.resetearPanels();
                         this.addTabsBtn.enable();
@@ -931,12 +937,16 @@ header("content-type: text/javascript; charset=UTF-8");
                         callback: function (r, a) {
                             console.log(r.length)
                             if (r[0].data['tipo'] == 'FACTURA') {
-
+                            	
                                 var arra = new Array();
+                                var total_factura = 0;
                                 for (var i = 0; i < r.length; i++) {
                                     arra[i] = r[i].data;
+                                    total_factura = parseFloat(total_factura) + parseFloat(r[i].data['importe_original']);
                                 }
                                 this.tabsFactura(arra);
+                                this.agregarDatosCampo(r[0].data['nro_fac'], r[0].data['razon'], r[0].data['nro_nit'], r[0].data['fecha_fac'], total_factura, r[0].data['nro_aut']);
+
                             } else {
                                 var concepto = r[0].data['billcupon'];
                                 var importe_original = r[0].data['importe_original'];
@@ -946,7 +956,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 //if(r[])
                                 this.tabsBoleto(concepto_original, importe_original, billete);
                                 //termina agregacion de los datos originales
-                                this.agregarDatosCampo(r[0].data['nro_fac'], r[0].data['razon'], r[0].data['nro_nit'], r[0].data['fecha'], r[0].data['importe_original'], r[0].data['nro_aut']);
+                                this.agregarDatosCampo(r[0].data['nro_fac'], r[0].data['razon'], r[0].data['nro_nit'], r[0].data['fecha_fac'], r[0].data['importe_original'], r[0].data['nro_aut']);
                             }
                         }, scope: this
                     });
@@ -1274,6 +1284,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     form: true
                 },
                 
+                
                 {
                     config: {
                         name: 'sucursal',
@@ -1454,11 +1465,16 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onSubmit: function (o) {
                 //this.win.html = this.getVistaPreviaHtml();
-                this.win.show();
-                this.win.body.update(this.getVistaPreviaHtml());
-                this.o = o;
-
-
+                 
+                 if(!this.megrid.plugins[0].isVisible()){
+                 	this.win.show();
+                	this.win.body.update(this.getVistaPreviaHtml());
+                	this.o = o;
+                 }else{
+                 	alert('esta activo el editor de conceptos por favor cierre')
+                 }	
+                 	
+   
             },
             successSave: function (resp) {
 
@@ -2231,6 +2247,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.megrid.remove();
                 this.megrid.store.removeAll();
             },
+            
+            
 
 
             mensaje_: function (titulo, mensaje, icono) {
