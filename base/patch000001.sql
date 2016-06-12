@@ -136,7 +136,7 @@ CREATE TABLE fac.tfactura (
   contabilizado VARCHAR(150) NOT NULL,
   observacion VARCHAR(150) NOT NULL,
   id_actividad_economica INTEGER NOT NULL,
-  comision NUMERIC(18,6) NOT NULL,
+  commission NUMERIC(18,6) NOT NULL,
   importe_comis NUMERIC(18,6) NOT NULL,
   por_comis NUMERIC(18,6) NOT NULL,
   renglon VARCHAR(150) NOT NULL,

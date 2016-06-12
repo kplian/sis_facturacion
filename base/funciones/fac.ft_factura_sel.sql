@@ -63,7 +63,7 @@ BEGIN
 						factu.renglon,
 						factu.monto,
 						factu.estado_reg,
-						factu.comision,
+						factu.commission,
 						factu.razon,
 						factu.id_usuario_ai,
 						factu.fecha_reg,

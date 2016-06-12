@@ -214,7 +214,7 @@ class ACTNota extends ACTbase{
 					<p>
 					    FACTURA: '.$item['factura'].' <br/>
 					    AUTORIZACION : '.$item['nroaut_anterior'].'<br>
-					    FECHA DE EMISION: '.$item['fecha_fac'].'
+					    FECHA DE EMISSION: '.$item['fecha_fac'].'
 					</p>
 					
 					<table>
@@ -291,7 +291,7 @@ class ACTNota extends ACTbase{
 					<hr/>
 					<p>
 					    Codigo de Control: '.$item['codigo_control'].' <br/>
-					    Fecha Limite de Emision: '.$dosificacion[0]['FECLIMEMI'].' <br/>
+					    Fecha Limite de Emission: '.$dosificacion[0]['FECLIMEMI'].' <br/>
 					    OBS: '.$item['nro_liquidacion'].' <br/>
 					</p>
 					
