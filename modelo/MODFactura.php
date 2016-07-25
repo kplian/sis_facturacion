@@ -38,7 +38,7 @@ class MODFactura extends MODbase{
 		$this->captura('renglon','varchar');
 		$this->captura('monto','varchar');
 		$this->captura('estado_reg','varchar');
-		$this->captura('comision','numeric');
+		$this->captura('commission','numeric');
 		$this->captura('razon','varchar');
 		$this->captura('id_usuario_ai','int4');
 		$this->captura('fecha_reg','timestamp');
@@ -88,7 +88,7 @@ class MODFactura extends MODbase{
 		$this->setParametro('renglon','renglon','varchar');
 		$this->setParametro('monto','monto','varchar');
 		$this->setParametro('estado_reg','estado_reg','varchar');
-		$this->setParametro('comision','comision','numeric');
+		$this->setParametro('commission','commission','numeric');
 		$this->setParametro('razon','razon','varchar');
 
 		//Ejecuta la instruccion
@@ -123,7 +123,7 @@ class MODFactura extends MODbase{
 		$this->setParametro('renglon','renglon','varchar');
 		$this->setParametro('monto','monto','varchar');
 		$this->setParametro('estado_reg','estado_reg','varchar');
-		$this->setParametro('comision','comision','numeric');
+		$this->setParametro('commission','commission','numeric');
 		$this->setParametro('razon','razon','varchar');
 
 		//Ejecuta la instruccion

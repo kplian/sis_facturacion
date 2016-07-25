@@ -429,15 +429,15 @@ Phx.vista.Factura=Ext.extend(Phx.gridInterfaz,{
 		},
 		{
 			config:{
-				name: 'comision',
-				fieldLabel: 'Comision',
+				name: 'commission',
+				fieldLabel: 'Commission',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
 				maxLength:1179654
 			},
 				type:'NumberField',
-				filters:{pfiltro:'factu.comision',type:'numeric'},
+				filters:{pfiltro:'factu.commission',type:'numeric'},
 				id_grupo:1,
 				grid:true,
 				form:true
@@ -575,7 +575,7 @@ Phx.vista.Factura=Ext.extend(Phx.gridInterfaz,{
 		{name:'renglon', type: 'string'},
 		{name:'monto', type: 'string'},
 		{name:'estado_reg', type: 'string'},
-		{name:'comision', type: 'numeric'},
+		{name:'commission', type: 'numeric'},
 		{name:'razon', type: 'string'},
 		{name:'id_usuario_ai', type: 'numeric'},
 		{name:'fecha_reg', type: 'date',dateFormat:'Y-m-d H:i:s.u'},

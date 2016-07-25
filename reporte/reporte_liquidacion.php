@@ -203,7 +203,7 @@
             <td colspan="4" align="left">Codigo de Control: bd-asd-dss-sasd</td>
         </tr>
         <tr>
-            <td colspan="4" align="left">Fecha Limite de Emision: 30/06/2015</td>
+            <td colspan="4" align="left">Fecha Limite de Emission: 30/06/2015</td>
         </tr>
 
 
