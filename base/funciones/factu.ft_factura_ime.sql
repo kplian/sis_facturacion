@@ -81,6 +81,15 @@ BEGIN
             1,
             p_id_usuario							
 			)RETURNING id_factura into v_id_factura;
+            
+            if(pxp.f_existe_parametro(p_tabla,'id_encomienda')) then
+            	
+            	update enco.tencomienda 
+                set id_factura = v_id_factura,
+                id_usuario_mod = p_id_usuario
+                where id_encomienda = v_parametros.id_encomienda;
+                
+            end if;
 			
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Factura almacenado(a) con exito (id_factura'||v_id_factura||')'); 
