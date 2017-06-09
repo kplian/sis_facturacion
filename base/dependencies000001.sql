@@ -14,5 +14,5 @@ ALTER TABLE ONLY factu.tfactura ADD
 ALTER TABLE ONLY factu.tfactura ADD
   CONSTRAINT factura_vendedor_fkey FOREIGN KEY (id_vendedor)
     REFERENCES segu.tpersona(id_persona);
-
+ 
 /***********************************F-DEP-JRR-FACTU-0-18/02/2014****************************************/

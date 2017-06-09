@@ -1,4 +1,3 @@
-
 /***********************************I-SCP-JRR-FACTU-0-18/02/2014****************************************/
 CREATE TABLE factu.tdosificacion (
   id_dosificacion INTEGER NOT NULL, 
@@ -11,7 +10,8 @@ CREATE TABLE factu.tdosificacion (
   autoimpresor VARCHAR(7) DEFAULT 'SFC 001'::character varying NOT NULL, 
   estado VARCHAR(10) DEFAULT 'Activo'::character varying NOT NULL, 
   fin BIGINT DEFAULT 0, 
-  sistema VARCHAR(20) DEFAULT 'Pasajes'::character varying, 
+  sistema VARCHAR(20) DEFAULT 'Pasajes'::character varying,
+  glosa_ley_453 TEXT,
   CONSTRAINT dosificacion_pkey PRIMARY KEY(id_dosificacion)
   
 ) INHERITS (pxp.tbase) WITHOUT OIDS;
